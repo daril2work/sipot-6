@@ -8,6 +8,7 @@ pegawai_bp = Blueprint('pegawai', __name__, url_prefix='/pegawai')
 
 @pegawai_bp.route('/')
 def list_pegawai():
+    page = request.args.get('page', 1, type=int)
     query = request.args.get('q', '').strip()
     pegawai_query = Pegawai.query
 
@@ -18,8 +19,9 @@ def list_pegawai():
             (Pegawai.jabatan.ilike(f'%{query}%'))
         )
 
-    pegawai_list = pegawai_query.order_by(Pegawai.nama_pegawai.asc()).all()
-    return render_template('pegawai/list.html', pegawai_list=pegawai_list, query=query)
+    pagination = pegawai_query.order_by(Pegawai.nama_pegawai.asc()).paginate(page=page, per_page=15, error_out=False)
+    pegawai_list = pagination.items
+    return render_template('pegawai/list.html', pegawai_list=pegawai_list, pagination=pagination, query=query)
 
 @pegawai_bp.route('/tambah', methods=['POST'])
 def tambah_pegawai():

@@ -10,8 +10,10 @@ transaksi_bp = Blueprint('transaksi', __name__, url_prefix='/transaksi')
 
 @transaksi_bp.route('/masuk')
 def list_masuk():
-    transaksi_list = TransaksiMasuk.query.order_by(TransaksiMasuk.tanggal_terima.desc()).all()
-    return render_template('transaksi/masuk_list.html', transaksi_list=transaksi_list)
+    page = request.args.get('page', 1, type=int)
+    pagination = TransaksiMasuk.query.order_by(TransaksiMasuk.tanggal_terima.desc()).paginate(page=page, per_page=15, error_out=False)
+    transaksi_list = pagination.items
+    return render_template('transaksi/masuk_list.html', transaksi_list=transaksi_list, pagination=pagination)
 
 @transaksi_bp.route('/masuk/tambah', methods=['GET', 'POST'])
 def tambah_masuk():
@@ -89,8 +91,10 @@ def tambah_masuk():
 
 @transaksi_bp.route('/keluar')
 def list_keluar():
-    transaksi_list = TransaksiKeluar.query.order_by(TransaksiKeluar.tanggal_keluar.desc()).all()
-    return render_template('transaksi/keluar_list.html', transaksi_list=transaksi_list)
+    page = request.args.get('page', 1, type=int)
+    pagination = TransaksiKeluar.query.order_by(TransaksiKeluar.tanggal_keluar.desc()).paginate(page=page, per_page=15, error_out=False)
+    transaksi_list = pagination.items
+    return render_template('transaksi/keluar_list.html', transaksi_list=transaksi_list, pagination=pagination)
 
 @transaksi_bp.route('/keluar/tambah', methods=['GET', 'POST'])
 def tambah_keluar():

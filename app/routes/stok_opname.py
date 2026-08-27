@@ -6,8 +6,10 @@ stok_opname_bp = Blueprint('stok_opname', __name__, url_prefix='/stok-opname')
 
 @stok_opname_bp.route('/')
 def list_stok_opname():
-    opnames = StokOpname.query.order_by(StokOpname.tanggal_opname.desc(), StokOpname.id.desc()).all()
-    return render_template('stok_opname/list.html', opnames=opnames)
+    page = request.args.get('page', 1, type=int)
+    pagination = StokOpname.query.order_by(StokOpname.tanggal_opname.desc(), StokOpname.id.desc()).paginate(page=page, per_page=15, error_out=False)
+    opnames = pagination.items
+    return render_template('stok_opname/list.html', opnames=opnames, pagination=pagination)
 
 @stok_opname_bp.route('/buat', methods=['GET', 'POST'])
 def buat_stok_opname():

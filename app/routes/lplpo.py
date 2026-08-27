@@ -8,8 +8,10 @@ lplpo_bp = Blueprint('lplpo', __name__, url_prefix='/lplpo')
 
 @lplpo_bp.route('/')
 def list_lplpo():
-    lplpo_list = LPLPO.query.order_by(LPLPO.tahun.desc(), LPLPO.bulan.desc()).all()
-    return render_template('lplpo/list.html', lplpo_list=lplpo_list)
+    page = request.args.get('page', 1, type=int)
+    pagination = LPLPO.query.order_by(LPLPO.tahun.desc(), LPLPO.bulan.desc()).paginate(page=page, per_page=15, error_out=False)
+    lplpo_list = pagination.items
+    return render_template('lplpo/list.html', lplpo_list=lplpo_list, pagination=pagination)
 
 @lplpo_bp.route('/generate', methods=['GET', 'POST'])
 def generate_lplpo():

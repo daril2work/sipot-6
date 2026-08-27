@@ -5,8 +5,10 @@ subunit_bp = Blueprint('subunit', __name__, url_prefix='/subunit')
 
 @subunit_bp.route('/')
 def list_subunit():
-    subunits = SubUnit.query.order_by(SubUnit.nama_subunit.asc()).all()
-    return render_template('subunit/list.html', subunits=subunits)
+    page = request.args.get('page', 1, type=int)
+    pagination = SubUnit.query.order_by(SubUnit.nama_subunit.asc()).paginate(page=page, per_page=15, error_out=False)
+    subunits = pagination.items
+    return render_template('subunit/list.html', subunits=subunits, pagination=pagination)
 
 @subunit_bp.route('/tambah', methods=['POST'])
 def tambah_subunit():

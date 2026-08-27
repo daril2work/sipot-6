@@ -6,6 +6,7 @@ obat_bp = Blueprint('obat', __name__, url_prefix='/obat')
 
 @obat_bp.route('/')
 def list_obat():
+    page = request.args.get('page', 1, type=int)
     query = request.args.get('q', '').strip()
     kategori_filter = request.args.get('kategori', '').strip()
 
@@ -20,12 +21,13 @@ def list_obat():
     if kategori_filter:
         obats_query = obats_query.filter(Obat.kategori == kategori_filter)
 
-    obats = obats_query.order_by(Obat.nama_obat.asc()).all()
+    pagination = obats_query.order_by(Obat.nama_obat.asc()).paginate(page=page, per_page=15, error_out=False)
+    obats = pagination.items
     
     kategori_list = db.session.query(Obat.kategori).distinct().all()
     kategori_list = [k[0] for k in kategori_list if k[0]]
 
-    return render_template('obat/list.html', obats=obats, query=query, kategori_list=kategori_list, selected_kategori=kategori_filter)
+    return render_template('obat/list.html', obats=obats, pagination=pagination, query=query, kategori_list=kategori_list, selected_kategori=kategori_filter)
 
 @obat_bp.route('/tambah', methods=['GET', 'POST'])
 def tambah_obat():

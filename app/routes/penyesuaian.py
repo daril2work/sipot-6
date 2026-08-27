@@ -6,6 +6,7 @@ penyesuaian_bp = Blueprint('penyesuaian', __name__, url_prefix='/penyesuaian')
 
 @penyesuaian_bp.route('/')
 def list_penyesuaian():
+    page = request.args.get('page', 1, type=int)
     query = request.args.get('q', '').strip()
     alasan_filter = request.args.get('alasan', '').strip()
 
@@ -21,10 +22,11 @@ def list_penyesuaian():
     if alasan_filter:
         penyesuaian_query = penyesuaian_query.filter(PenyesuaianStok.kategori_alasan == alasan_filter)
 
-    records = penyesuaian_query.order_by(PenyesuaianStok.created_at.desc()).all()
+    pagination = penyesuaian_query.order_by(PenyesuaianStok.created_at.desc()).paginate(page=page, per_page=15, error_out=False)
+    records = pagination.items
     obats = Obat.query.order_by(Obat.nama_obat.asc()).all()
 
-    return render_template('penyesuaian/list.html', records=records, obats=obats, query=query, selected_alasan=alasan_filter)
+    return render_template('penyesuaian/list.html', records=records, pagination=pagination, obats=obats, query=query, selected_alasan=alasan_filter)
 
 @penyesuaian_bp.route('/tambah', methods=['GET', 'POST'])
 def tambah_penyesuaian():

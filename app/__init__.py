@@ -44,6 +44,15 @@ def create_app(config_class=Config):
         except (ValueError, TypeError):
             return "0"
 
+    @app.context_processor
+    def inject_url_for_other_page():
+        from flask import request, url_for
+        def url_for_other_page(page):
+            args = request.args.copy()
+            args['page'] = page
+            return url_for(request.endpoint, **args)
+        return dict(url_for_other_page=url_for_other_page)
+
     with app.app_context():
         db.create_all()
 
