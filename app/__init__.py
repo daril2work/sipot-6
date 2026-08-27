@@ -56,11 +56,18 @@ def create_app(config_class=Config):
     @app.context_processor
     def inject_url_for_other_page():
         from flask import request, url_for
+        from app.models import User
         def url_for_other_page(page):
             args = request.args.copy()
             args['page'] = page
             return url_for(request.endpoint, **args)
-        return dict(url_for_other_page=url_for_other_page)
+        
+        try:
+            all_users = User.query.order_by(User.role.asc(), User.id.asc()).all()
+        except Exception:
+            all_users = []
+
+        return dict(url_for_other_page=url_for_other_page, all_users=all_users)
 
     with app.app_context():
         db.create_all()

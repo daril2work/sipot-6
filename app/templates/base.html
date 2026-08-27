@@ -157,12 +157,24 @@
             <!-- User Status & Logout -->
             <div class="flex items-center gap-3 flex-shrink-0">
                 {% if session.get('user_id') %}
+                
+                <!-- Quick Account Switcher (Dev Mode 1-Click Toggle) -->
+                {% if all_users %}
+                <div class="hidden md:flex items-center gap-1.5 bg-slate-950 px-2.5 py-1 border border-slate-800 rounded-xl shadow-inner">
+                    <span class="text-[11px] text-amber-400 font-bold flex items-center gap-1">⚡ Alih Peran:</span>
+                    <select onchange="if (this.value) window.location.href = '/auth/switch-account/' + this.value;" class="bg-slate-950 text-slate-200 text-xs font-semibold focus:outline-none cursor-pointer border-none py-0.5">
+                        {% for u in all_users %}
+                        <option value="{{ u.username }}" {{ 'selected' if u.username == session.get('username') }}>
+                            {{ '👑 Admin Farmasi' if u.role == 'Admin' else '🏥 ' + (u.subunit.nama_subunit if u.subunit else u.username) }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% endif %}
+
                 <div class="hidden sm:flex items-center gap-2">
                     <span class="px-2.5 py-1 rounded-full text-[11px] font-bold {{ 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' if session.get('role') == 'Admin' else 'bg-blue-500/20 text-blue-300 border border-blue-500/30' }}">
                         {{ '👑 Admin Farmasi' if session.get('role') == 'Admin' else '🏥 ' + session.get('subunit_nama') }}
-                    </span>
-                    <span class="text-xs text-slate-300 font-medium">
-                        {{ session.get('nama_lengkap') }}
                     </span>
                 </div>
 

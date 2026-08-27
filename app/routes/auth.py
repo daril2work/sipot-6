@@ -44,6 +44,27 @@ def logout():
     flash('Anda telah berhasil keluar dari sistem.', 'info')
     return redirect(url_for('auth.login'))
 
+@auth_bp.route('/switch-account/<username>')
+def switch_account(username):
+    user = User.query.filter_by(username=username).first()
+    if user:
+        session['user_id'] = user.id
+        session['username'] = user.username
+        session['role'] = user.role
+        session['nama_lengkap'] = user.nama_lengkap or user.username
+        session['subunit_id'] = user.subunit_id
+        session['subunit_nama'] = user.subunit.nama_subunit if user.subunit else 'Gudang Farmasi Utama'
+
+        flash(f'⚡ Berhasil beralih ke akun {session["nama_lengkap"]} ({session["subunit_nama"]})', 'info')
+
+        if user.role == 'Admin':
+            return redirect(url_for('dashboard.index'))
+        else:
+            return redirect(url_for('auth.unit_dashboard'))
+    
+    flash('Akun pengguna tidak ditemukan.', 'danger')
+    return redirect(request.referrer or url_for('auth.login'))
+
 @auth_bp.route('/unit-dashboard')
 def unit_dashboard():
     if 'user_id' not in session:
