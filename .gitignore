@@ -8,6 +8,7 @@ venv/
 ENV/
 .venv/
 instance/*.db
+*.db
 .vscode/
 .idea/
 .env
