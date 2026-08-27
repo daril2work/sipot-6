@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Stok Opname - Gudang Farmasi Puskesmas{% endblock %}
+{% block header_title %}Stok Opname Berkala Gudang Farmasi Puskesmas{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header Actions -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold text-slate-100">Daftar Dokumen Stok Opname</h3>
+            <p class="text-xs text-slate-400">Pencocokan berkala antara stok fisik di gudang dengan stok sistem.</p>
+        </div>
+
+        <a href="{{ url_for('stok_opname.buat_stok_opname') }}" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-xs flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Buat Sesi Stok Opname Baru
+        </a>
+    </div>
+
+    <!-- Table Dokumen Opname -->
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left">
+                <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800 whitespace-nowrap">
+                    <tr>
+                        <th class="px-5 py-3.5">No. Dokumen</th>
+                        <th class="px-5 py-3.5">Tanggal Opname</th>
+                        <th class="px-5 py-3.5 text-center">Status</th>
+                        <th class="px-5 py-3.5">Petugas Audit</th>
+                        <th class="px-5 py-3.5">Penanggung Jawab</th>
+                        <th class="px-5 py-3.5 text-center">Jumlah Batch</th>
+                        <th class="px-5 py-3.5 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-sans">
+                    {% if opnames %}
+                        {% for o in opnames %}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-5 py-4 font-mono font-bold text-emerald-400 whitespace-nowrap">
+                                <a href="{{ url_for('stok_opname.detail_stok_opname', id=o.id) }}" class="hover:underline">
+                                    {{ o.no_opname }}
+                                </a>
+                            </td>
+                            <td class="px-5 py-4 font-mono text-slate-300 whitespace-nowrap">{{ o.tanggal_opname.strftime('%d-%m-%Y') }}</td>
+                            <td class="px-5 py-4 text-center whitespace-nowrap">
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-bold {{ 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' if o.status == 'Final' else 'bg-amber-500/20 text-amber-300 border border-amber-500/30' }}">
+                                    {{ o.status }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-4 text-slate-200 whitespace-nowrap">{{ o.petugas_opname or '-' }}</td>
+                            <td class="px-5 py-4 text-slate-300 whitespace-nowrap">{{ o.penanggung_jawab or '-' }}</td>
+                            <td class="px-5 py-4 text-center font-mono font-bold text-slate-100 whitespace-nowrap">{{ o.items|length }} Batch</td>
+                            <td class="px-5 py-4 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ url_for('stok_opname.detail_stok_opname', id=o.id) }}" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold rounded-lg text-xs">
+                                        👁️ Detail & Opname
+                                    </a>
+                                    <a href="{{ url_for('stok_opname.print_stok_opname', id=o.id) }}" target="_blank" class="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 font-bold rounded-lg text-xs">
+                                        🖨️ Cetak Berita Acara
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center py-8 text-slate-500 text-xs">
+                                Belum ada dokumen stok opname. Klik "Buat Sesi Stok Opname Baru".
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,153 @@
+{% extends 'base.html' %}
+
+{% block title %}Form Penyesuaian Stok - Gudang Farmasi Puskesmas{% endblock %}
+{% block header_title %}Catat Penyesuaian Stok (Rusak / ED / Hilang / Koreksi){% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6" x-data="penyesuaianForm()">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-xl font-bold text-slate-100">Form Audit Penyesuaian Stok</h3>
+            <p class="text-xs text-slate-400">Pengurangan atau penambahan stok fisik batch obat secara langsung.</p>
+        </div>
+        <a href="{{ url_for('penyesuaian.list_penyesuaian') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium">
+            &larr; Kembali
+        </a>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+        
+        <form action="{{ url_for('penyesuaian.tambah_penyesuaian') }}" method="POST" class="space-y-4 text-xs">
+            
+            <!-- Pilih Obat -->
+            <div>
+                <label class="block font-semibold text-slate-300 mb-1">Pilih Obat *</label>
+                <select x-model="selectedObatId" @change="loadBatches()" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <option value="">-- Pilih Obat --</option>
+                    {% for o in obats %}
+                    <option value="{{ o.id }}">{{ o.kode_obat }} - {{ o.nama_obat }} ({{ o.satuan }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Pilih Batch Obat -->
+            <div>
+                <label class="block font-semibold text-slate-300 mb-1">Pilih Nomor Batch *</label>
+                <select name="batch_id" x-model="selectedBatchId" @change="updateBatchInfo()" required :disabled="batches.length === 0" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500 disabled:opacity-50">
+                    <option value="">-- Pilih Batch Obat --</option>
+                    <template x-for="b in batches" :key="b.id">
+                        <option :value="b.id" x-text="b.no_batch + ' (ED: ' + b.expired_date + ' | Stok: ' + b.stok_sekarang + ')'"></option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- Informasi Batch -->
+            <div x-show="activeBatch" x-cloak class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] text-slate-400">Stok Batch Saat Ini dalam Sistem:</p>
+                    <p class="text-sm font-bold text-emerald-400 font-mono" x-text="activeBatch ? activeBatch.stok_sekarang + ' satuan' : '0'"></p>
+                </div>
+                <div class="text-right">
+                    <p class="text-[11px] text-slate-400">Sumber Dana / Kadaluarsa:</p>
+                    <p class="text-xs font-semibold text-slate-200" x-text="activeBatch ? (activeBatch.sumber_dana + ' | ED: ' + activeBatch.expired_date) : ''"></p>
+                </div>
+            </div>
+
+            <!-- Jenis Penyesuaian & Kategori Alasan -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Jenis Penyesuaian *</label>
+                    <select name="jenis_penyesuaian" x-model="jenis" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                        <option value="Pengurangan">Pengurangan (Rusak / ED / Hilang)</option>
+                        <option value="Penambahan">Penambahan (Koreksi Fisik Lebih)</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Kategori Alasan *</label>
+                    <select name="kategori_alasan" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                        <option value="Rusak / Cacat">Rusak / Cacat Kemasan</option>
+                        <option value="Kadaluarsa / ED">Kadaluarsa / Expired (ED)</option>
+                        <option value="Kehilangan">Kehilangan / Selisih Hilang</option>
+                        <option value="Koreksi Fisik">Koreksi Fisik Opname</option>
+                        <option value="Lain-lain">Lain-lain</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Jumlah & Tanggal -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Jumlah *</label>
+                    <input type="number" name="jumlah" min="1" required placeholder="Masukkan jumlah item..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 font-mono focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Tanggal Audit / Kejadian *</label>
+                    <input type="date" name="tanggal_penyesuaian" value="{{ today_str }}" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <!-- Keterangan & Petugas -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Nama Petugas Audit *</label>
+                    <input type="text" name="petugas" value="Daril Rahmatullah, S. Farm." required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Catatan / Keterangan Tambahan</label>
+                    <input type="text" name="keterangan" placeholder="Contoh: Botol pecah saat bongkar muat..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 flex justify-end gap-2">
+                <button type="submit" :disabled="!selectedBatchId" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 disabled:opacity-40 text-slate-950 font-bold rounded-xl text-xs transition-all flex items-center gap-2">
+                    💾 Simpan Penyesuaian Stok
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function penyesuaianForm() {
+        return {
+            selectedObatId: '',
+            selectedBatchId: '',
+            jenis: 'Pengurangan',
+            batches: [],
+            activeBatch: null,
+
+            async loadBatches() {
+                this.selectedBatchId = '';
+                this.batches = [];
+                this.activeBatch = null;
+
+                if (!this.selectedObatId) return;
+
+                try {
+                    const res = await fetch('/penyesuaian/get-batches/' + this.selectedObatId);
+                    this.batches = await res.json();
+                } catch (e) {
+                    console.error('Failed to load batches:', e);
+                }
+            },
+
+            updateBatchInfo() {
+                if (!this.selectedBatchId) {
+                    this.activeBatch = null;
+                    return;
+                }
+                this.activeBatch = this.batches.find(b => b.id == this.selectedBatchId);
+            }
+        }
+    }
+</script>
+{% endblock %}

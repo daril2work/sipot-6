@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Inisialisasi Stok Opname Baru - Gudang Farmasi Puskesmas{% endblock %}
+{% block header_title %}Inisialisasi Dokumen Stok Opname Baru{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-xl font-bold text-slate-100">Inisialisasi Sesi Stok Opname</h3>
+            <p class="text-xs text-slate-400">Sistem akan memuat seluruh batch obat yang aktif ke dalam lembar kerja opname.</p>
+        </div>
+        <a href="{{ url_for('stok_opname.list_stok_opname') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium">
+            &larr; Batal
+        </a>
+    </div>
+
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+        
+        <form action="{{ url_for('stok_opname.buat_stok_opname') }}" method="POST" class="space-y-4 text-xs">
+            
+            <div>
+                <label class="block font-semibold text-slate-300 mb-1">Tanggal Stok Opname *</label>
+                <input type="date" name="tanggal_opname" value="{{ today_str }}" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-300 mb-1">Nama Petugas Pemeriksa / Auditor *</label>
+                <input type="text" name="petugas_opname" value="Daril Rahmatullah, S. Farm." required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-300 mb-1">Penanggung Jawab / Kepala Puskesmas *</label>
+                <input type="text" name="penanggung_jawab" value="dr. Durotun Nafisa, M.H" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div>
+                <label class="block font-semibold text-slate-300 mb-1">Catatan / Keterangan Sesi Opname</label>
+                <input type="text" name="keterangan" placeholder="Contoh: Stok Opname Rutin Akhir Bulan Agustus..." class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 flex justify-end">
+                <button type="submit" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all flex items-center gap-2">
+                    🚀 Muat Data Batch & Buat Lembar Opname
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% endblock %}

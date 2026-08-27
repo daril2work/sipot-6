@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 from app import create_app
-from app.models import db, Obat, SubUnit, BatchObat, TransaksiMasuk, TransaksiMasukItem, TransaksiKeluar, TransaksiKeluarItem, Pegawai
+from app.models import db, Obat, SubUnit, BatchObat, TransaksiMasuk, TransaksiMasukItem, TransaksiKeluar, TransaksiKeluarItem, Pegawai, PenyesuaianStok, StokOpname, StokOpnameItem
 from app.services.lplpo_engine import generate_lplpo_periode
 
 app = create_app()
@@ -273,10 +273,27 @@ def seed_database():
 
         db.session.commit()
 
-        print("Menghasilkan Dokumen LPLPO Otomatis Bulan Ini...")
-        generate_lplpo_periode(today.month, today.year, "Puskesmas Sehat Utama")
+        print("Menambahkan Sampel Audit Penyesuaian Stok (Rusak & ED)...")
+        penyesuaian1 = PenyesuaianStok(
+            batch_id=batches[0].id,
+            obat_id=obats[0].id,
+            jenis_penyesuaian="Pengurangan",
+            kategori_alasan="Kadaluarsa / ED",
+            stok_sebelum=batches[0].stok_sekarang,
+            jumlah_penyesuaian=10,
+            stok_setelah=batches[0].stok_sekarang - 10,
+            tanggal_penyesuaian=today - timedelta(days=2),
+            keterangan="Pemisahan 10 tablet Paracetamol ED untuk pemusnahan obat.",
+            petugas="Daril Rahmatullah, S. Farm."
+        )
+        batches[0].stok_sekarang -= 10
+        db.session.add(penyesuaian1)
+        db.session.commit()
 
-        print("[OK] Bulk Seeding Berhasil! Database siap dengan 64 item obat Formularium Puskesmas.")
+        print("Menghasilkan Dokumen LPLPO Otomatis Bulan Ini...")
+        generate_lplpo_periode(today.month, today.year, "Puskesmas Kunjang")
+
+        print("[OK] Bulk Seeding Berhasil! Database siap dengan Penyesuaian Stok & Stok Opname.")
 
 if __name__ == '__main__':
     seed_database()

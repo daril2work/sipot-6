@@ -90,6 +90,20 @@
                     <span x-show="!sidebarCollapsed" class="truncate">Pengeluaran Poli (FEFO)</span>
                 </a>
 
+                <!-- Section 2.5 -->
+                <div x-show="!sidebarCollapsed" class="pt-3 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Audit & Opname Stok</div>
+                <div x-show="sidebarCollapsed" class="pt-2 border-t border-slate-800/80 my-1"></div>
+
+                <a href="{{ url_for('penyesuaian.list_penyesuaian') }}" :title="sidebarCollapsed ? 'Penyesuaian Stok (ED/Rusak)' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'penyesuaian' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Penyesuaian Stok (ED/Rusak)</span>
+                </a>
+
+                <a href="{{ url_for('stok_opname.list_stok_opname') }}" :title="sidebarCollapsed ? 'Stok Opname Berkala' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'stok_opname' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Stok Opname Berkala</span>
+                </a>
+
                 <!-- Section 3 -->
                 <div x-show="!sidebarCollapsed" class="pt-3 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Laporan Kemenkes</div>
                 <div x-show="sidebarCollapsed" class="pt-2 border-t border-slate-800/80 my-1"></div>

@@ -16,6 +16,8 @@ def create_app(config_class=Config):
     from app.routes.lplpo import lplpo_bp
     from app.routes.pos import pos_bp
     from app.routes.pegawai import pegawai_bp
+    from app.routes.penyesuaian import penyesuaian_bp
+    from app.routes.stok_opname import stok_opname_bp
 
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(obat_bp)
@@ -24,6 +26,8 @@ def create_app(config_class=Config):
     app.register_blueprint(lplpo_bp)
     app.register_blueprint(pos_bp)
     app.register_blueprint(pegawai_bp)
+    app.register_blueprint(penyesuaian_bp)
+    app.register_blueprint(stok_opname_bp)
 
     # Context Processors & Custom Template Filters
     @app.template_filter('currency')

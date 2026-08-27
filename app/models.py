@@ -200,5 +200,54 @@ class Pegawai(BaseModel):
     no_hp = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+class PenyesuaianStok(BaseModel):
+    __tablename__ = 'penyesuaian_stok'
+
+    id = db.Column(db.Integer, primary_key=True)
+    batch_id = db.Column(db.Integer, db.ForeignKey('batch_obat.id'), nullable=False)
+    obat_id = db.Column(db.Integer, db.ForeignKey('obat.id'), nullable=False)
+    jenis_penyesuaian = db.Column(db.String(20), nullable=False)  # 'Pengurangan' atau 'Penambahan'
+    kategori_alasan = db.Column(db.String(50), nullable=False)   # 'Rusak', 'Hilang', 'Expired (ED)', 'Koreksi Fisik', 'Lain-lain'
+    stok_sebelum = db.Column(db.Integer, nullable=False)
+    jumlah_penyesuaian = db.Column(db.Integer, nullable=False)
+    stok_setelah = db.Column(db.Integer, nullable=False)
+    tanggal_penyesuaian = db.Column(db.Date, default=date.today)
+    keterangan = db.Column(db.Text)
+    petugas = db.Column(db.String(100), default='Daril Rahmatullah, S. Farm.')
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    batch = db.relationship('BatchObat')
+    obat = db.relationship('Obat')
+
+class StokOpname(BaseModel):
+    __tablename__ = 'stok_opname'
+
+    id = db.Column(db.Integer, primary_key=True)
+    no_opname = db.Column(db.String(50), unique=True, nullable=False)
+    tanggal_opname = db.Column(db.Date, default=date.today)
+    status = db.Column(db.String(20), default='Draft')  # Draft, Final
+    petugas_opname = db.Column(db.String(100), default='Daril Rahmatullah, S. Farm.')
+    penanggung_jawab = db.Column(db.String(100), default='dr. Durotun Nafisa, M.H')
+    keterangan = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    items = db.relationship('StokOpnameItem', backref='stok_opname', lazy=True, cascade="all, delete-orphan")
+
+class StokOpnameItem(BaseModel):
+    __tablename__ = 'stok_opname_item'
+
+    id = db.Column(db.Integer, primary_key=True)
+    stok_opname_id = db.Column(db.Integer, db.ForeignKey('stok_opname.id'), nullable=False)
+    batch_id = db.Column(db.Integer, db.ForeignKey('batch_obat.id'), nullable=False)
+    obat_id = db.Column(db.Integer, db.ForeignKey('obat.id'), nullable=False)
+    stok_sistem = db.Column(db.Integer, default=0)
+    stok_fisik = db.Column(db.Integer, default=0)
+    selisih = db.Column(db.Integer, default=0) # stok_fisik - stok_sistem
+    keterangan = db.Column(db.String(200))
+
+    batch = db.relationship('BatchObat')
+    obat = db.relationship('Obat')
+
+
 
 

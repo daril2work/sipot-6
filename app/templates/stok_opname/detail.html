@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Stok Opname {{ opname.no_opname }} - Gudang Farmasi Puskesmas{% endblock %}
+{% block header_title %}Lembar Kerja Stok Opname {{ opname.no_opname }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="opnameWorksheet()">
+
+    <!-- Header Actions -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono font-bold rounded-lg text-sm">
+                    {{ opname.no_opname }}
+                </span>
+                <h3 class="text-xl font-bold text-slate-100">Lembar Audit Stok Opname</h3>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">
+                Tanggal: <span class="text-slate-200 font-mono">{{ opname.tanggal_opname.strftime('%d-%m-%Y') }}</span> | 
+                Petugas: <span class="text-slate-200 font-semibold">{{ opname.petugas_opname }}</span> | 
+                Status: 
+                <span class="px-2 py-0.5 rounded text-xs font-bold {{ 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' if opname.status == 'Final' else 'bg-amber-500/20 text-amber-300 border border-amber-500/30' }}">
+                    {{ opname.status }}
+                </span>
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+            {% if opname.status == 'Draft' %}
+            <form action="{{ url_for('stok_opname.finalkan_stok_opname', id=opname.id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin memfinalkan Stok Opname ini? Stok batch di sistem akan langsung disesuaikan dengan hasil fisik.')">
+                <button type="submit" class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-1.5">
+                    🔒 Finalkan & Sinkronkan Stok Fisik
+                </button>
+            </form>
+            {% else %}
+            <span class="px-3.5 py-2 bg-slate-800 text-slate-400 rounded-xl text-xs font-semibold border border-slate-700">
+                🔒 Dokumen Difinalkan & Terkunci
+            </span>
+            {% endif %}
+
+            <a href="{{ url_for('stok_opname.print_stok_opname', id=opname.id) }}" target="_blank" class="px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 font-bold rounded-xl transition-all text-xs flex items-center gap-1.5">
+                🖨️ Cetak Berita Acara
+            </a>
+
+            <a href="{{ url_for('stok_opname.list_stok_opname') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium">
+                &larr; Kembali
+            </a>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+        <div class="relative flex-1 max-w-md">
+            <input type="text" x-model="search" placeholder="Cari nama obat atau nomor batch..." class="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+            <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        <div class="text-xs text-slate-400 font-mono">
+            Total {{ items|length }} Batch Obat
+        </div>
+    </div>
+
+    <!-- Table Interactive -->
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left">
+                <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800 whitespace-nowrap">
+                    <tr>
+                        <th class="px-3 py-3 text-center">No</th>
+                        <th class="px-4 py-3">Kode & Nama Obat</th>
+                        <th class="px-4 py-3">No Batch</th>
+                        <th class="px-3 py-3 text-center">Kadaluarsa (ED)</th>
+                        <th class="px-4 py-3 text-right">Stok Sistem</th>
+                        <th class="px-4 py-3 text-right">Stok Fisik *</th>
+                        <th class="px-4 py-3 text-right">Selisih</th>
+                        <th class="px-4 py-3">Catatan / Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-sans">
+                    {% for item in items %}
+                    <tr x-show="filterRow('{{ item.obat.nama_obat|lower }}', '{{ item.obat.kode_obat|lower }}', '{{ item.batch.no_batch|lower }}')" class="hover:bg-slate-800/40 transition-colors">
+                        <td class="px-3 py-3 text-center text-slate-500 whitespace-nowrap">{{ loop.index }}</td>
+                        <td class="px-4 py-3 whitespace-nowrap">
+                            <span class="font-mono text-emerald-400 font-semibold">{{ item.obat.kode_obat }}</span> - 
+                            <span class="font-bold text-slate-100">{{ item.obat.nama_obat }}</span>
+                            <span class="text-[11px] text-slate-500">({{ item.obat.satuan }})</span>
+                        </td>
+                        <td class="px-4 py-3 font-mono text-slate-300 whitespace-nowrap">{{ item.batch.no_batch }}</td>
+                        <td class="px-3 py-3 text-center font-mono text-slate-400 whitespace-nowrap">{{ item.batch.expired_date.strftime('%d-%m-%Y') }}</td>
+                        <td class="px-4 py-3 text-right font-mono font-bold text-slate-300 whitespace-nowrap">{{ item.stok_sistem|number }}</td>
+
+                        <!-- Editable Stok Fisik -->
+                        <td class="px-2 py-2 text-right whitespace-nowrap">
+                            <input type="number" 
+                                   value="{{ item.stok_fisik }}" 
+                                   min="0"
+                                   {% if opname.status == 'Final' %}disabled{% endif %}
+                                   @change="updateItem({{ item.id }}, $event.target.value, $el.closest('tr'))" 
+                                   class="w-24 px-2 py-1 text-right bg-slate-950 border border-slate-800 rounded font-mono font-bold text-emerald-300 focus:outline-none focus:border-emerald-500 disabled:opacity-60">
+                        </td>
+
+                        <!-- Selisih -->
+                        <td class="px-4 py-3 text-right font-mono font-bold whitespace-nowrap selisih-col {{ 'text-rose-400' if item.selisih < 0 else 'text-emerald-400' if item.selisih > 0 else 'text-slate-500' }}">
+                            {{ item.selisih|number }}
+                        </td>
+
+                        <!-- Keterangan -->
+                        <td class="px-2 py-2 whitespace-nowrap">
+                            <input type="text" 
+                                   value="{{ item.keterangan or '' }}" 
+                                   placeholder="Catatan selisih..." 
+                                   {% if opname.status == 'Final' %}disabled{% endif %}
+                                   @change="updateKet({{ item.id }}, $event.target.value)" 
+                                   class="w-full min-w-[150px] px-2 py-1 bg-slate-950 border border-slate-800 rounded text-slate-200 focus:outline-none focus:border-emerald-500 disabled:opacity-60">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function opnameWorksheet() {
+        return {
+            search: '',
+
+            filterRow(nama, kode, batch) {
+                if (!this.search) return true;
+                const s = this.search.toLowerCase();
+                return nama.includes(s) || kode.includes(s) || batch.includes(s);
+            },
+
+            async updateItem(itemId, stokFisik, rowElem) {
+                const formData = new FormData();
+                formData.append('item_id', itemId);
+                formData.append('stok_fisik', stokFisik);
+
+                try {
+                    const res = await fetch('{{ url_for("stok_opname.update_item_opname", id=opname.id) }}', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        const selisihCol = rowElem.querySelector('.selisih-col');
+                        if (selisihCol) {
+                            selisihCol.textContent = data.selisih;
+                            if (data.selisih < 0) {
+                                selisihCol.className = 'px-4 py-3 text-right font-mono font-bold whitespace-nowrap selisih-col text-rose-400';
+                            } else if (data.selisih > 0) {
+                                selisihCol.className = 'px-4 py-3 text-right font-mono font-bold whitespace-nowrap selisih-col text-emerald-400';
+                            } else {
+                                selisihCol.className = 'px-4 py-3 text-right font-mono font-bold whitespace-nowrap selisih-col text-slate-500';
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.error('Failed to update item opname:', e);
+                }
+            },
+
+            async updateKet(itemId, ket) {
+                const formData = new FormData();
+                formData.append('item_id', itemId);
+                formData.append('keterangan', ket);
+
+                try {
+                    await fetch('{{ url_for("stok_opname.update_item_opname", id=opname.id) }}', {
+                        method: 'POST',
+                        body: formData
+                    });
+                } catch (e) {
+                    console.error('Failed to update keterangan:', e);
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}
