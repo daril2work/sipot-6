@@ -1,6 +1,6 @@
 from datetime import date, timedelta
 from app import create_app
-from app.models import db, Obat, SubUnit, BatchObat, TransaksiMasuk, TransaksiMasukItem, TransaksiKeluar, TransaksiKeluarItem, Pegawai, PenyesuaianStok, StokOpname, StokOpnameItem
+from app.models import db, User, Obat, SubUnit, BatchObat, TransaksiMasuk, TransaksiMasukItem, TransaksiKeluar, TransaksiKeluarItem, Pegawai, PenyesuaianStok, StokOpname, StokOpnameItem
 from app.services.lplpo_engine import generate_lplpo_periode
 
 app = create_app()
@@ -96,6 +96,50 @@ def seed_database():
             SubUnit(nama_subunit="Poskesdes Sejahtera", penanggung_jawab="Bidan Poskesdes", keterangan="Pos Kesehatan Desa Jejaring")
         ]
         db.session.add_all(subunits)
+        db.session.commit()
+
+        print("Menambahkan Akun Pengguna Multi-Role (Admin & Sub-Unit Users)...")
+        # User Admin
+        admin_user = User(
+            username="admin",
+            role="Admin",
+            nama_lengkap="Apt. Daril Rahmatullah, S.Farm.",
+            subunit_id=None
+        )
+        admin_user.set_password("admin123")
+
+        users = [admin_user]
+
+        # User untuk masing-masing SubUnit
+        user_mapping = {
+            "Gudang Farmasi & Apotek": ("apotek", "Apoteker & Pengelola Obat"),
+            "Poli Umum": ("poli.umum", "Staf Poli Umum"),
+            "Poli Gigi & Mulut": ("poli.gigi", "Staf Poli Gigi"),
+            "KIA / KB": ("kia.kb", "Staf KIA / KB"),
+            "UGD & Rawat Inap": ("ugd.rawat", "Staf UGD & Rawat Inap"),
+            "Laboratorium Kesehatan": ("labkes", "Staf Labkesmas"),
+            "Pelayanan Gizi": ("gizi", "Staf Pelayanan Gizi"),
+            "Kesehatan Lingkungan": ("kesling", "Staf Kesehatan Lingkungan"),
+            "Rekam Medis & Pendaftaran": ("simpus", "Staf Rekam Medis"),
+            "Tata Usaha & Kepegawaian": ("tu", "Staf Tata Usaha"),
+            "Promkes & Pemberdayaan": ("promkes", "Staf Promkes"),
+            "Pustu Melati": ("pustu", "Bidan Pustu Melati"),
+            "Poskesdes Sejahtera": ("poskesdes", "Bidan Poskesdes Sejahtera"),
+        }
+
+        for su in subunits:
+            if su.nama_subunit in user_mapping:
+                uname, full_name = user_mapping[su.nama_subunit]
+                u = User(
+                    username=uname,
+                    role="SubUnit",
+                    nama_lengkap=full_name,
+                    subunit_id=su.id
+                )
+                u.set_password("123456")
+                users.append(u)
+
+        db.session.add_all(users)
         db.session.commit()
 
         print("Menambahkan Master Obat Formularium Puskesmas (Bulk Data)...")

@@ -42,14 +42,14 @@
                     <svg class="w-5 h-5 transition-transform duration-300" :class="sidebarCollapsed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
                 </button>
             </div>
-
             <!-- Navigation Links -->
             <nav class="p-3 space-y-1 text-sm font-medium">
                 
-                <!-- Dashboard -->
-                <a href="{{ url_for('dashboard.index') }}" :title="sidebarCollapsed ? 'Dashboard' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if request.endpoint == 'dashboard.index' else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                {% if session.get('role') == 'Admin' %}
+                <!-- Admin Navigation -->
+                <a href="{{ url_for('dashboard.index') }}" :title="sidebarCollapsed ? 'Dashboard Utama' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if request.endpoint == 'dashboard.index' else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
                     <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
-                    <span x-show="!sidebarCollapsed" class="truncate">Dashboard</span>
+                    <span x-show="!sidebarCollapsed" class="truncate">Dashboard Utama</span>
                 </a>
 
                 <!-- Section 1 -->
@@ -112,12 +112,24 @@
                     <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     <span x-show="!sidebarCollapsed" class="truncate">Modul LPLPO Bulanan</span>
                 </a>
+                
+                {% else %}
+
+                <!-- SubUnit Navigation -->
+                <div x-show="!sidebarCollapsed" class="pt-2 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Portal Unit Pelayanan</div>
+                
+                <a href="{{ url_for('auth.unit_dashboard') }}" :title="sidebarCollapsed ? 'Dashboard Unit' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors bg-emerald-500/10 text-emerald-400 font-semibold">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Portal {{ session.get('subunit_nama', 'Unit Pelayanan') }}</span>
+                </a>
+                {% endif %}
+
             </nav>
         </div>
 
         <!-- Sidebar Footer -->
         <div class="p-3 border-t border-slate-800 text-[11px] text-slate-500 overflow-hidden">
-            <span x-show="!sidebarCollapsed" class="truncate block">Puskesmas Sehat Utama &copy; 2026</span>
+            <span x-show="!sidebarCollapsed" class="truncate block">Puskesmas Kunjang &copy; 2026</span>
             <span x-show="sidebarCollapsed" class="text-center block font-bold text-emerald-400">PKM</span>
         </div>
     </aside>
@@ -142,11 +154,23 @@
                 </h2>
             </div>
             
+            <!-- User Status & Logout -->
             <div class="flex items-center gap-3 flex-shrink-0">
-                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
-                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                    Sistem Aktif (FEFO)
-                </span>
+                {% if session.get('user_id') %}
+                <div class="hidden sm:flex items-center gap-2">
+                    <span class="px-2.5 py-1 rounded-full text-[11px] font-bold {{ 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' if session.get('role') == 'Admin' else 'bg-blue-500/20 text-blue-300 border border-blue-500/30' }}">
+                        {{ '👑 Admin Farmasi' if session.get('role') == 'Admin' else '🏥 ' + session.get('subunit_nama') }}
+                    </span>
+                    <span class="text-xs text-slate-300 font-medium">
+                        {{ session.get('nama_lengkap') }}
+                    </span>
+                </div>
+
+                <a href="{{ url_for('auth.logout') }}" class="px-3 py-1.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-300 border border-rose-500/30 font-bold rounded-xl text-xs transition-all flex items-center gap-1.5" title="Keluar Akun">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+                    <span class="hidden sm:inline">Keluar</span>
+                </a>
+                {% endif %}
             </div>
         </header>
 

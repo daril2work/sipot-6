@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard {{ subunit.nama_subunit }} - SIPOT Puskesmas Kunjang{% endblock %}
+{% block header_title %}Portal Pelayanan {{ subunit.nama_subunit }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Sub-Unit Header Banner -->
+    <div class="bg-gradient-to-r from-slate-900 via-slate-900 to-emerald-950/40 p-6 rounded-3xl border border-slate-800 shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="space-y-1">
+            <div class="flex items-center gap-2">
+                <span class="px-3 py-1 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-mono font-bold">
+                    UNIT AKSI PUSKESMAS
+                </span>
+                <h2 class="text-2xl font-black text-slate-100 tracking-tight">{{ subunit.nama_subunit }}</h2>
+            </div>
+            <p class="text-xs text-slate-400">
+                Penanggung Jawab (PJ): <span class="text-emerald-400 font-semibold">👤 {{ subunit.penanggung_jawab or 'Staf Puskesmas' }}</span> | 
+                Lokasi: <span class="text-slate-300">{{ subunit.keterangan or 'Area Layanan Internal' }}</span>
+            </p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <div class="px-4 py-2 bg-slate-950 border border-slate-800 rounded-2xl text-center">
+                <p class="text-[10px] uppercase font-bold text-slate-500">Total Distribusi Obat</p>
+                <p class="text-lg font-mono font-bold text-emerald-400">{{ total_transaksi }} Kali</p>
+            </div>
+            <div class="px-4 py-2 bg-slate-950 border border-slate-800 rounded-2xl text-center">
+                <p class="text-[10px] uppercase font-bold text-slate-500">Total Item Diterima</p>
+                <p class="text-lg font-mono font-bold text-slate-100">{{ total_item_diterima }} Sediaan</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Riwayat Distribusi Obat ke Sub-Unit Ini -->
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl space-y-4 p-5">
+        <div class="flex items-center justify-between">
+            <h3 class="text-sm font-bold text-slate-100">Riwayat Penyerahan & Pasokan Obat ke {{ subunit.nama_subunit }}</h3>
+            <span class="text-xs text-slate-400 font-mono">Restriksi Akses: Khusus {{ subunit.nama_subunit }}</span>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left">
+                <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800 whitespace-nowrap">
+                    <tr>
+                        <th class="px-4 py-3.5">No. Penyerahan</th>
+                        <th class="px-4 py-3.5">Tanggal Keluar</th>
+                        <th class="px-4 py-3.5">Rincian Obat Diterima (Alokasi FEFO)</th>
+                        <th class="px-4 py-3.5">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-sans">
+                    {% if transaksi_list %}
+                        {% for t in transaksi_list %}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-4 py-3 font-mono font-bold text-emerald-400 whitespace-nowrap">{{ t.no_penyerahan }}</td>
+                            <td class="px-4 py-3 font-mono text-slate-300 whitespace-nowrap">{{ t.tanggal_keluar.strftime('%d-%m-%Y') }}</td>
+                            <td class="px-4 py-3">
+                                <div class="space-y-1">
+                                    {% for item in t.items %}
+                                    <div class="text-xs text-slate-300">
+                                        <span class="font-semibold text-slate-100">{{ item.obat.nama_obat }}</span>: 
+                                        <span class="font-mono text-emerald-400 font-bold">{{ item.jumlah|number }} {{ item.obat.satuan }}</span> 
+                                        <span class="text-slate-500">(Batch: {{ item.batch.no_batch }}, ED: {{ item.batch.expired_date.strftime('%d/%m/%Y') }})</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-4 py-3 text-slate-400 whitespace-nowrap">{{ t.keterangan or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="4" class="text-center py-8 text-slate-500 text-xs">
+                                Belum ada penyerahan obat dari Gudang Farmasi ke unit ini.
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

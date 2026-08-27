@@ -18,6 +18,7 @@ def create_app(config_class=Config):
     from app.routes.pegawai import pegawai_bp
     from app.routes.penyesuaian import penyesuaian_bp
     from app.routes.stok_opname import stok_opname_bp
+    from app.routes.auth import auth_bp
 
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(obat_bp)
@@ -28,6 +29,14 @@ def create_app(config_class=Config):
     app.register_blueprint(pegawai_bp)
     app.register_blueprint(penyesuaian_bp)
     app.register_blueprint(stok_opname_bp)
+    app.register_blueprint(auth_bp)
+
+    @app.before_request
+    def check_authentication():
+        from flask import request, redirect, url_for, session
+        allowed_endpoints = ['auth.login', 'static']
+        if not session.get('user_id') and request.endpoint and request.endpoint not in allowed_endpoints:
+            return redirect(url_for('auth.login'))
 
     # Context Processors & Custom Template Filters
     @app.template_filter('currency')
