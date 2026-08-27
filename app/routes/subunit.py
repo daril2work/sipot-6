@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
-from app.models import db, SubUnit
+from app.models import db, SubUnit, Pegawai
 
 subunit_bp = Blueprint('subunit', __name__, url_prefix='/subunit')
 
@@ -8,7 +8,8 @@ def list_subunit():
     page = request.args.get('page', 1, type=int)
     pagination = SubUnit.query.order_by(SubUnit.nama_subunit.asc()).paginate(page=page, per_page=15, error_out=False)
     subunits = pagination.items
-    return render_template('subunit/list.html', subunits=subunits, pagination=pagination)
+    pegawai_list = Pegawai.query.order_by(Pegawai.nama_pegawai.asc()).all()
+    return render_template('subunit/list.html', subunits=subunits, pagination=pagination, pegawai_list=pegawai_list)
 
 @subunit_bp.route('/tambah', methods=['POST'])
 def tambah_subunit():

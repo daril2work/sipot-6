@@ -4,83 +4,141 @@
 {% block header_title %}Master Sub-Unit & Poli Pelayanan{% endblock %}
 
 {% block content %}
-<div class="space-y-6" x-data="{ editModal: false, editId: null, editNama: '', editPJ: '', editKet: '' }">
+<div class="space-y-6" x-data="{ showEditModal: false, editData: { id: null, nama_subunit: '', penanggung_jawab: '', keterangan: '' } }">
 
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
             <h3 class="text-xl font-bold text-slate-100">Daftar Sub-Unit / Poli Puskesmas</h3>
-            <p class="text-xs text-slate-400">Unit sasaran pengeluaran/distribusi obat internal Puskesmas.</p>
+            <p class="text-xs text-slate-400">Unit sasaran pengeluaran/distribusi obat internal Puskesmas dan penanggung jawabnya.</p>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Form Tambah -->
-        <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 h-fit">
+        <!-- Form Tambah Sub-Unit Baru -->
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 h-fit shadow-xl">
             <h4 class="font-bold text-slate-100 text-sm mb-4">Tambah Sub-Unit / Poli Baru</h4>
-            <form method="POST" action="{{ url_for('subunit.tambah_subunit') }}" class="space-y-3">
+            <form method="POST" action="{{ url_for('subunit.tambah_subunit') }}" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Nama Sub-Unit / Poli *</label>
-                    <input type="text" name="nama_subunit" required placeholder="Contoh: Poli Umum, KIA/KB, Pustu Melati" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <input type="text" name="nama_subunit" required placeholder="Contoh: Poli Umum, KIA/KB, Pustu Melati" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Penanggung Jawab (PJ)</label>
-                    <input type="text" name="penanggung_jawab" placeholder="Nama Perawat / Bidan PJ" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Penanggung Jawab (PJ SDM) *</label>
+                    <select name="penanggung_jawab" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+                        <option value="">-- Pilih Penanggung Jawab dari Master Pegawai --</option>
+                        {% for p in pegawai_list %}
+                        <option value="{{ p.nama_pegawai }}">{{ p.nama_pegawai }} - {{ p.jabatan }} ({{ p.jenis_asn or 'ASN' }})</option>
+                        {% endfor %}
+                    </select>
+                    <p class="text-[11px] text-slate-500 mt-1">*Diambil otomatis dari daftar Master Pegawai yang telah diupload.</p>
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Keterangan / Lokasi</label>
-                    <input type="text" name="keterangan" placeholder="Contoh: Gedung Utama Lt 1" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                    <input type="text" name="keterangan" placeholder="Contoh: Gedung Utama Lt 1" class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
                 </div>
 
-                <button type="submit" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 text-sm mt-2">
+                <button type="submit" class="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 text-xs mt-2 transition-all">
                     Simpan Sub-Unit
                 </button>
             </form>
         </div>
 
         <!-- Tabel Sub-Unit -->
-        <div class="lg:col-span-2 bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
-            <div class="overflow-x-auto">
-                <table class="w-full text-sm text-left">
-                    <thead class="text-xs uppercase bg-slate-950/80 text-slate-400 border-b border-slate-800">
-                        <tr>
-                            <th class="px-5 py-3.5">Nama Sub-Unit / Poli</th>
-                            <th class="px-5 py-3.5">Penanggung Jawab</th>
-                            <th class="px-5 py-3.5">Keterangan</th>
-                            <th class="px-5 py-3.5 text-center">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-800/60">
-                        {% if subunits %}
-                            {% for s in subunits %}
-                            <tr class="hover:bg-slate-800/40 transition-colors">
-                                <td class="px-5 py-4 font-bold text-slate-100">{{ s.nama_subunit }}</td>
-                                <td class="px-5 py-4 text-slate-300">{{ s.penanggung_jawab or '-' }}</td>
-                                <td class="px-5 py-4 text-slate-400 text-xs">{{ s.keterangan or '-' }}</td>
-                                <td class="px-5 py-4 text-center">
-                                    <form method="POST" action="{{ url_for('subunit.hapus_subunit', id=s.id) }}" onsubmit="return confirm('Yakin ingin menghapus sub-unit ini?');">
-                                        <button type="submit" class="p-1.5 text-rose-400 hover:bg-rose-500/10 rounded-lg text-xs" title="Hapus">
-                                            Hapus
-                                        </button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        {% else %}
+        <div class="lg:col-span-2 space-y-4">
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left">
+                        <thead class="text-xs uppercase bg-slate-950 text-slate-400 border-b border-slate-800 whitespace-nowrap">
                             <tr>
-                                <td colspan="4" class="text-center py-8 text-slate-500 text-sm">Belum ada sub-unit registered.</td>
+                                <th class="px-5 py-3.5">Nama Sub-Unit / Poli</th>
+                                <th class="px-5 py-3.5">Penanggung Jawab (PJ)</th>
+                                <th class="px-5 py-3.5">Keterangan</th>
+                                <th class="px-5 py-3.5 text-center">Aksi</th>
                             </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60 font-sans">
+                            {% if subunits %}
+                                {% for s in subunits %}
+                                <tr class="hover:bg-slate-800/40 transition-colors">
+                                    <td class="px-5 py-4 font-bold text-slate-100 whitespace-nowrap">{{ s.nama_subunit }}</td>
+                                    <td class="px-5 py-4 whitespace-nowrap">
+                                        {% if s.penanggung_jawab %}
+                                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold bg-emerald-500/10 text-emerald-300 border border-emerald-500/20">
+                                            👤 {{ s.penanggung_jawab }}
+                                        </span>
+                                        {% else %}
+                                        <span class="text-slate-500 text-xs">- Belum Diatur -</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="px-5 py-4 text-slate-400 text-xs whitespace-nowrap">{{ s.keterangan or '-' }}</td>
+                                    <td class="px-5 py-4 text-center whitespace-nowrap">
+                                        <div class="flex items-center justify-center gap-2">
+                                            <button @click="editData = { id: {{ s.id }}, nama_subunit: '{{ s.nama_subunit }}', penanggung_jawab: '{{ s.penanggung_jawab or '' }}', keterangan: '{{ s.keterangan or '' }}' }; showEditModal = true" class="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg" title="Edit Sub-Unit">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                            </button>
+                                            <form method="POST" action="{{ url_for('subunit.hapus_subunit', id=s.id) }}" onsubmit="return confirm('Yakin ingin menghapus sub-unit ini?');">
+                                                <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg" title="Hapus">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                                </button>
+                                            </form>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center py-8 text-slate-500 text-xs">Belum ada sub-unit registered.</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
+
+            <!-- Pagination Bar -->
+            {% include 'pagination.html' %}
         </div>
 
-        <!-- Pagination Bar -->
-        {% include 'pagination.html' %}
+    </div>
 
+    <!-- Modal Edit Sub-Unit -->
+    <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div @click.away="showEditModal = false" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h4 class="font-bold text-slate-100 text-sm">Edit Sub-Unit / Poli</h4>
+                <button @click="showEditModal = false" class="text-slate-400 hover:text-slate-200 text-lg">&times;</button>
+            </div>
+
+            <form :action="'/subunit/' + editData.id + '/edit'" method="POST" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Nama Sub-Unit / Poli *</label>
+                    <input type="text" name="nama_subunit" x-model="editData.nama_subunit" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Penanggung Jawab (PJ SDM)</label>
+                    <select name="penanggung_jawab" x-model="editData.penanggung_jawab" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                        <option value="">-- Pilih Penanggung Jawab dari Master Pegawai --</option>
+                        {% for p in pegawai_list %}
+                        <option value="{{ p.nama_pegawai }}">{{ p.nama_pegawai }} - {{ p.jabatan }} ({{ p.jenis_asn or 'ASN' }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Keterangan / Lokasi</label>
+                    <input type="text" name="keterangan" x-model="editData.keterangan" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="pt-3 border-t border-slate-800 flex justify-end gap-2">
+                    <button type="button" @click="showEditModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-medium">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-500 text-slate-950 font-bold rounded-xl">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
     </div>
 
 </div>
