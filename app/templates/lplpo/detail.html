@@ -1,0 +1,220 @@
+{% extends 'base.html' %}
+
+{% block title %}LPLPO Periode {{ lplpo.nama_bulan }} {{ lplpo.tahun }} - {{ lplpo.nama_puskesmas }}{% endblock %}
+{% block header_title %}Matriks Dokumen LPLPO Bulanan Standar Kemenkes{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="lplpoMatrix()">
+
+    <!-- Header Actions -->
+    <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <span class="px-3 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold rounded-lg text-sm">
+                    {{ lplpo.nama_bulan.upper() }} {{ lplpo.tahun }}
+                </span>
+                <h3 class="text-2xl font-bold text-slate-100">{{ lplpo.nama_puskesmas }}</h3>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">
+                Status: 
+                <span class="px-2 py-0.5 rounded text-xs font-bold {{ 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' if lplpo.status == 'Final' else 'bg-amber-500/20 text-amber-300 border border-amber-500/30' }}">
+                    {{ lplpo.status }}
+                </span> 
+                | Tanggal Dibuat: {{ lplpo.tanggal_laporan.strftime('%d-%m-%Y') }}
+            </p>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2.5">
+            <!-- Toggle Status Lock -->
+            <form action="{{ url_for('lplpo.toggle_status', id=lplpo.id) }}" method="POST" class="inline">
+                {% if lplpo.status == 'Draft' %}
+                <button type="submit" class="px-3.5 py-2 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/30 rounded-xl text-xs font-bold transition-all">
+                    🔒 Kunci & Finalkan LPLPO
+                </button>
+                {% else %}
+                <button type="submit" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 rounded-xl text-xs font-bold transition-all">
+                    🔓 Buka Kunci (Kembali ke Draft)
+                </button>
+                {% endif %}
+            </form>
+
+            <!-- Cetak Format Resmi Kemenkes -->
+            <a href="{{ url_for('lplpo.print_lplpo', id=lplpo.id) }}" target="_blank" class="px-3.5 py-2 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 font-bold rounded-xl transition-all text-xs flex items-center gap-1.5">
+                🖨️ Cetak Form Resmi
+            </a>
+
+            <!-- Unduh Excel -->
+            <a href="{{ url_for('lplpo.download_excel', id=lplpo.id) }}" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-1.5 text-xs">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Excel (.xlsx)
+            </a>
+
+            <a href="{{ url_for('lplpo.list_lplpo') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium">
+                &larr; Kembali
+            </a>
+        </div>
+    </div>
+
+    <!-- Quick Search Filter & Legend -->
+    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="relative flex-1 max-w-md w-full">
+            <input type="text" x-model="search" placeholder="Cari nama atau kode obat dalam LPLPO..." class="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+            <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+        </div>
+        
+        <div class="flex items-center gap-4 text-[11px] text-slate-400 font-mono">
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-emerald-500/30 border border-emerald-500"></span> Persediaan</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-blue-500/30 border border-blue-500"></span> Sisa Stok</span>
+            <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded bg-amber-500/30 border border-amber-500"></span> Permintaan</span>
+        </div>
+    </div>
+
+    <!-- LPLPO Matrix Table -->
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-2xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+                <thead class="bg-slate-950 text-slate-300 uppercase tracking-wider font-bold border-b border-slate-800 whitespace-nowrap">
+                    <tr>
+                        <th class="px-3 py-3 text-center border-r border-slate-800">No</th>
+                        <th class="px-3 py-3 border-r border-slate-800">Kode</th>
+                        <th class="px-4 py-3 min-w-[180px] border-r border-slate-800">Nama Obat</th>
+                        <th class="px-3 py-3 text-center border-r border-slate-800">Satuan</th>
+                        <th class="px-3 py-3 text-right bg-slate-900/60 border-r border-slate-800">Stok Awal</th>
+                        <th class="px-3 py-3 text-right bg-slate-900/60 border-r border-slate-800">Penerimaan</th>
+                        <th class="px-3 py-3 text-right bg-slate-900/90 font-extrabold text-emerald-400 border-r border-slate-800">Persediaan</th>
+                        <th class="px-3 py-3 text-right bg-slate-900/60 border-r border-slate-800">Pemakaian</th>
+                        <th class="px-3 py-3 text-right bg-slate-900/90 font-extrabold text-blue-400 border-r border-slate-800">Sisa Stok</th>
+                        <th class="px-3 py-3 text-right bg-slate-900/60 border-r border-slate-800">Stok Optimum</th>
+                        <th class="px-3 py-3 text-right bg-amber-950/40 text-amber-300 border-r border-slate-800">Permintaan</th>
+                        <th class="px-3 py-3 text-right bg-emerald-950/40 text-emerald-300">Pemberian</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-mono">
+                    {% for item in items %}
+                    <tr x-show="filterRow('{{ item.obat.nama_obat|lower }}', '{{ item.obat.kode_obat|lower }}')" class="hover:bg-slate-800/50 transition-colors">
+                        <td class="px-3 py-2.5 text-center text-slate-500 border-r border-slate-800/60 whitespace-nowrap">{{ loop.index }}</td>
+                        <td class="px-3 py-2.5 font-semibold text-emerald-400 border-r border-slate-800/60 whitespace-nowrap">{{ item.obat.kode_obat }}</td>
+                        <td class="px-4 py-2.5 font-sans font-medium text-slate-100 border-r border-slate-800/60 min-w-[180px] max-w-xs truncate">{{ item.obat.nama_obat }}</td>
+                        <td class="px-3 py-2.5 text-center text-slate-400 border-r border-slate-800/60 whitespace-nowrap">{{ item.obat.satuan }}</td>
+                        <td class="px-3 py-2.5 text-right text-slate-300 border-r border-slate-800/60 whitespace-nowrap">{{ item.stok_awal|number }}</td>
+                        <td class="px-3 py-2.5 text-right text-slate-300 border-r border-slate-800/60 whitespace-nowrap">{{ item.penerimaan|number }}</td>
+                        <td class="px-3 py-2.5 text-right font-bold text-emerald-400 border-r border-slate-800/60 bg-emerald-950/20 whitespace-nowrap">{{ item.persediaan|number }}</td>
+                        
+                        <!-- Pemakaian (with Breakdown Modal trigger) -->
+                        <td class="px-3 py-2.5 text-right border-r border-slate-800/60 whitespace-nowrap">
+                            <button @click="openBreakdown({{ item.obat.id }}, '{{ item.obat.nama_obat }}')" class="text-slate-200 hover:text-emerald-300 hover:underline font-bold focus:outline-none">
+                                {{ item.pemakaian|number }} 🔍
+                            </button>
+                        </td>
+
+                        <td class="px-3 py-2.5 text-right font-bold text-blue-400 border-r border-slate-800/60 bg-blue-950/20 whitespace-nowrap">{{ item.sisa_stok|number }}</td>
+                        <td class="px-3 py-2.5 text-right text-slate-300 border-r border-slate-800/60 whitespace-nowrap">{{ item.stok_optimum|number }}</td>
+                        
+                        <!-- Editable Permintaan -->
+                        <td class="px-2 py-1.5 text-right border-r border-slate-800/60 bg-amber-950/20 whitespace-nowrap">
+                            <input type="number" 
+                                   value="{{ item.permintaan }}" 
+                                   {% if lplpo.status == 'Final' %}disabled{% endif %}
+                                   @change="updateItem({{ item.id }}, 'permintaan', $event.target.value)" 
+                                   class="w-16 px-1.5 py-1 text-right bg-slate-950 border border-slate-800 rounded font-bold text-amber-300 focus:outline-none focus:border-amber-500 disabled:opacity-60">
+                        </td>
+
+                        <!-- Editable Pemberian -->
+                        <td class="px-2 py-1.5 text-right bg-emerald-950/20 whitespace-nowrap">
+                            <input type="number" 
+                                   value="{{ item.pemberian }}" 
+                                   {% if lplpo.status == 'Final' %}disabled{% endif %}
+                                   @change="updateItem({{ item.id }}, 'pemberian', $event.target.value)" 
+                                   class="w-16 px-1.5 py-1 text-right bg-slate-950 border border-slate-800 rounded font-bold text-emerald-300 focus:outline-none focus:border-emerald-500 disabled:opacity-60">
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Sub-Unit Pemakaian Breakdown Modal -->
+    <div x-show="showModal" x-cloak class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div @click.away="showModal = false" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <div>
+                    <h4 class="font-bold text-slate-100 text-sm">Rincian Pemakaian per Sub-Unit / Poli</h4>
+                    <p class="text-xs text-emerald-400 font-semibold mt-0.5" x-text="activeObatNama"></p>
+                </div>
+                <button @click="showModal = false" class="text-slate-400 hover:text-white font-bold text-lg">&times;</button>
+            </div>
+
+            <div class="space-y-2">
+                <template x-for="bd in breakdownData" :key="bd.nama_subunit">
+                    <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
+                        <span class="font-semibold text-slate-200" x-text="bd.nama_subunit"></span>
+                        <span class="font-mono font-bold text-emerald-400" x-text="bd.jumlah + ' satuan'"></span>
+                    </div>
+                </template>
+
+                <div x-show="breakdownData.length === 0" class="py-6 text-center text-slate-500 text-xs">
+                    Belum ada pengeluaran recorded ke sub-unit pada bulan ini.
+                </div>
+            </div>
+
+            <div class="pt-3 border-t border-slate-800 text-right">
+                <button @click="showModal = false" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-bold">Tutup</button>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function lplpoMatrix() {
+        return {
+            search: '',
+            showModal: false,
+            activeObatNama: '',
+            breakdownData: [],
+
+            filterRow(nama, kode) {
+                if (!this.search) return true;
+                const s = this.search.toLowerCase();
+                return nama.includes(s) || kode.includes(s);
+            },
+
+            async openBreakdown(obatId, obatNama) {
+                this.activeObatNama = obatNama;
+                this.breakdownData = [];
+                this.showModal = true;
+
+                try {
+                    const res = await fetch('{{ url_for("lplpo.detail_lplpo", id=lplpo.id) }}/item-breakdown/' + obatId);
+                    const data = await res.json();
+                    if (data.status === 'success') {
+                        this.breakdownData = data.breakdown;
+                    }
+                } catch (e) {
+                    console.error('Failed to fetch breakdown:', e);
+                }
+            },
+
+            async updateItem(itemId, field, value) {
+                const formData = new FormData();
+                formData.append('item_id', itemId);
+                formData.append('field', field);
+                formData.append('value', value);
+
+                try {
+                    const response = await fetch('{{ url_for("lplpo.update_lplpo_item", id=lplpo.id) }}', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const res = await response.json();
+                } catch (e) {
+                    console.error('Failed to update LPLPO item:', e);
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

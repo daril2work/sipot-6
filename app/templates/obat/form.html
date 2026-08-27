@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ 'Edit Obat' if obat else 'Tambah Obat Baru' }} - Gudang Farmasi Puskesmas{% endblock %}
+{% block header_title %}{{ 'Edit Data Obat' if obat else 'Tambah Data Obat Baru' }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+
+    <div class="flex items-center justify-between">
+        <h3 class="text-xl font-bold text-slate-100">{{ 'Edit Obat' if obat else 'Form Obat Baru' }}</h3>
+        <a href="{{ url_for('obat.list_obat') }}" class="px-3.5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium">
+            &larr; Kembali
+        </a>
+    </div>
+
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6">
+        <form method="POST" action="{{ url_for('obat.edit_obat', id=obat.id) if obat else url_for('obat.tambah_obat') }}" class="space-y-4">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Kode Obat *</label>
+                    <input type="text" name="kode_obat" value="{{ obat.kode_obat if obat else '' }}" required placeholder="Contoh: OBT-001" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 font-mono focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Kategori Obat</label>
+                    <select name="kategori" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        {% set kat = obat.kategori if obat else 'Generik' %}
+                        <option value="Generik" {{ 'selected' if kat == 'Generik' }}>Generik</option>
+                        <option value="Antibiotik" {{ 'selected' if kat == 'Antibiotik' }}>Antibiotik</option>
+                        <option value="Psikotropika" {{ 'selected' if kat == 'Psikotropika' }}>Psikotropika</option>
+                        <option value="Narkotika" {{ 'selected' if kat == 'Narkotika' }}>Narkotika</option>
+                        <option value="BMHP" {{ 'selected' if kat == 'BMHP' }}>BMHP (Bahan Medis Habis Pakai)</option>
+                        <option value="Alkes" {{ 'selected' if kat == 'Alkes' }}>Alat Kesehatan</option>
+                        <option value="Vaksin" {{ 'selected' if kat == 'Vaksin' }}>Vaksin</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Nama Lengkap Obat *</label>
+                <input type="text" name="nama_obat" value="{{ obat.nama_obat if obat else '' }}" required placeholder="Contoh: Paracetamol Tablet 500 mg" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Bentuk Sediaan</label>
+                    <select name="bentuk_sediaan" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                        {% set bs = obat.bentuk_sediaan if obat else 'Tablet' %}
+                        <option value="Tablet" {{ 'selected' if bs == 'Tablet' }}>Tablet / Kaplet</option>
+                        <option value="Sirup" {{ 'selected' if bs == 'Sirup' }}>Sirup / Suspensi</option>
+                        <option value="Injeksi" {{ 'selected' if bs == 'Injeksi' }}>Injeksi / Ampul</option>
+                        <option value="Salep" {{ 'selected' if bs == 'Salep' }}>Salep / Krim</option>
+                        <option value="Tetes" {{ 'selected' if bs == 'Tetes' }}>Tetes (Mata/Telinga)</option>
+                        <option value="Infus" {{ 'selected' if bs == 'Infus' }}>Cairan Infus</option>
+                        <option value="BMHP" {{ 'selected' if bs == 'BMHP' }}>BMHP / Spuit / Kassa</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Satuan Terkecil</label>
+                    <input type="text" name="satuan" value="{{ obat.satuan if obat else 'Tablet' }}" placeholder="Contoh: Tablet, Botol, Tube, Ampul" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Stok Minimum (Alert)</label>
+                    <input type="number" name="stok_minimum" value="{{ obat.stok_minimum if obat else 10 }}" min="0" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">Estimasi Harga Satuan (Rp)</label>
+                    <input type="number" step="0.01" name="harga_satuan" value="{{ obat.harga_satuan if obat else 0 }}" min="0" class="w-full px-4 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+            </div>
+
+            <div class="pt-4 flex items-center justify-end gap-3">
+                <a href="{{ url_for('obat.list_obat') }}" class="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium">Batal</a>
+                <button type="submit" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 text-sm">
+                    Simpan Data Obat
+                </button>
+            </div>
+        </form>
+    </div>
+
+</div>
+{% endblock %}

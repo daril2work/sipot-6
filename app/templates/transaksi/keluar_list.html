@@ -1,0 +1,65 @@
+{% extends 'base.html' %}
+
+{% block title %}Riwayat Pengeluaran Obat ke Poli (Out) - Gudang Farmasi Puskesmas{% endblock %}
+{% block header_title %}Riwayat Distribusi Obat ke Poli (FEFO){% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold text-slate-100">Daftar Pengeluaran Obat (Stock Out)</h3>
+            <p class="text-xs text-slate-400">Pencatatan distribusi obat ke Poli/Sub-Unit dengan alokasi otomatis tanggal kedaluwarsa terdekat (FEFO).</p>
+        </div>
+
+        <a href="{{ url_for('transaksi.tambah_keluar') }}" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Catat Pengeluaran ke Poli
+        </a>
+    </div>
+
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs uppercase bg-slate-950/80 text-slate-400 border-b border-slate-800">
+                    <tr>
+                        <th class="px-5 py-3.5">No Penyerahan</th>
+                        <th class="px-5 py-3.5">Tanggal Keluar</th>
+                        <th class="px-5 py-3.5">Sub-Unit / Poli Tujuan</th>
+                        <th class="px-5 py-3.5">Detail Alokasi Batch (FEFO)</th>
+                        <th class="px-5 py-3.5">Keterangan</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    {% if transaksi_list %}
+                        {% for t in transaksi_list %}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-5 py-4 font-mono font-bold text-blue-400">{{ t.no_penyerahan }}</td>
+                            <td class="px-5 py-4 text-slate-300">{{ t.tanggal_keluar.strftime('%d-%m-%Y') }}</td>
+                            <td class="px-5 py-4 font-bold text-slate-100">{{ t.subunit.nama_subunit }}</td>
+                            <td class="px-5 py-4">
+                                <div class="space-y-1">
+                                    {% for item in t.items %}
+                                    <div class="text-xs text-slate-300">
+                                        <span class="font-semibold text-slate-100">{{ item.obat.nama_obat }}</span>: 
+                                        <span class="font-mono text-emerald-400 font-bold">{{ item.jumlah|number }} {{ item.obat.satuan }}</span> 
+                                        <span class="text-slate-500">(Alokasi FEFO Batch: {{ item.batch.no_batch }}, ED: {{ item.batch.expired_date.strftime('%d/%m/%Y') }})</span>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </td>
+                            <td class="px-5 py-4 text-slate-400 text-xs">{{ t.keterangan or '-' }}</td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="text-center py-8 text-slate-500 text-sm">Belum ada riwayat transaksi pengeluaran ke poli.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

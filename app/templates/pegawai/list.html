@@ -1,0 +1,219 @@
+{% extends 'base.html' %}
+
+{% block title %}Master Data Pegawai - Gudang Farmasi Puskesmas{% endblock %}
+{% block header_title %}Master Data Pegawai & SDM Puskesmas{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{ showAddModal: false, showEditModal: false, showImportModal: false, editData: {} }">
+
+    <!-- Header Actions -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold text-slate-100">Daftar Pegawai & SDM Puskesmas</h3>
+            <p class="text-xs text-slate-400">Kelola data Kepala Puskesmas, Apoteker, Dokter, Bidan, dan Staf Farmasi.</p>
+        </div>
+
+        <div class="flex items-center gap-2.5">
+            {% if pegawai_list %}
+            <form action="{{ url_for('pegawai.hapus_semua_pegawai') }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus SELURUH data pegawai?')">
+                <button type="submit" class="px-3.5 py-2.5 bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 font-semibold rounded-xl transition-all text-xs border border-rose-500/30">
+                    🗑️ Kosongkan Semua
+                </button>
+            </form>
+            {% endif %}
+            <button @click="showImportModal = true" class="px-3.5 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl transition-all text-xs border border-slate-700">
+                📥 Impor Masal (CSV/JSON)
+            </button>
+            <button @click="showAddModal = true" class="px-3.5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 text-xs flex items-center gap-1.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                Tambah Pegawai Baru
+            </button>
+        </div>
+    </div>
+
+    <!-- Search Bar -->
+    <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 flex items-center justify-between">
+        <form method="GET" action="{{ url_for('pegawai.list_pegawai') }}" class="flex gap-3 w-full max-w-md">
+            <div class="relative flex-1">
+                <input type="text" name="q" value="{{ query }}" placeholder="Cari nama, NIP, atau jabatan..." class="w-full pl-10 pr-4 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 focus:outline-none focus:border-emerald-500">
+                <svg class="w-4 h-4 text-slate-500 absolute left-3.5 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+            </div>
+            <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-xl">Cari</button>
+        </form>
+        <div class="text-xs text-slate-400 font-mono">
+            Total: {{ pegawai_list|length }} Pegawai
+        </div>
+    </div>
+
+    <!-- Table Pegawai -->
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+        <div class="overflow-x-auto">
+            <table class="w-full text-xs text-left">
+                <thead class="bg-slate-950 text-slate-400 uppercase font-semibold border-b border-slate-800 whitespace-nowrap">
+                    <tr>
+                        <th class="px-4 py-3.5">NIP / NIK</th>
+                        <th class="px-4 py-3.5">Nama Pegawai</th>
+                        <th class="px-4 py-3.5">Jabatan</th>
+                        <th class="px-3 py-3.5 text-center">Golongan</th>
+                        <th class="px-3 py-3.5 text-center">Jenis ASN</th>
+                        <th class="px-3 py-3.5 text-center">TMT Gol</th>
+                        <th class="px-4 py-3.5 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60 font-sans">
+                    {% if pegawai_list %}
+                        {% for p in pegawai_list %}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-4 py-3 font-mono font-semibold text-emerald-400 whitespace-nowrap">{{ p.nip }}</td>
+                            <td class="px-4 py-3 font-bold text-slate-100 whitespace-nowrap">{{ p.nama_pegawai }}</td>
+                            <td class="px-4 py-3 whitespace-nowrap">
+                                <span class="px-2.5 py-1 rounded-full text-[11px] font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                    {{ p.jabatan }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 text-center font-mono text-slate-300 whitespace-nowrap">{{ p.golongan or '-' }}</td>
+                            <td class="px-3 py-3 text-center whitespace-nowrap">
+                                <span class="px-2 py-0.5 rounded text-[11px] font-bold {{ 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' if p.jenis_asn == 'PNS' else 'bg-amber-500/20 text-amber-300 border border-amber-500/30' if 'PPPK' in (p.jenis_asn or '') else 'bg-slate-800 text-slate-400' }}">
+                                    {{ p.jenis_asn or '-' }}
+                                </span>
+                            </td>
+                            <td class="px-3 py-3 text-center font-mono text-slate-400 whitespace-nowrap">{{ p.tmt_gol or '-' }}</td>
+                            <td class="px-4 py-3 text-center whitespace-nowrap">
+                                <div class="flex items-center justify-center gap-2">
+                                    <button @click="editData = { id: {{ p.id }}, nip: '{{ p.nip }}', nama_pegawai: '{{ p.nama_pegawai }}', jabatan: '{{ p.jabatan }}', golongan: '{{ p.golongan }}', jenis_asn: '{{ p.jenis_asn }}', tmt_gol: '{{ p.tmt_gol }}' }; showEditModal = true" class="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-800 rounded-lg" title="Edit Pegawai">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                                    </button>
+                                    <form action="{{ url_for('pegawai.hapus_pegawai', id=p.id) }}" method="POST" onsubmit="return confirm('Hapus pegawai ini?')">
+                                        <button type="submit" class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-800 rounded-lg" title="Hapus">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-slate-500 text-xs">
+                                Belum ada data pegawai terdaftar. Klik "Tambah Pegawai Baru".
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Pegawai -->
+    <div x-show="showAddModal" x-cloak class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div @click.away="showAddModal = false" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h4 class="font-bold text-slate-100 text-sm">Tambah Pegawai Baru</h4>
+                <button @click="showAddModal = false" class="text-slate-400 hover:text-white font-bold">&times;</button>
+            </div>
+
+            <form action="{{ url_for('pegawai.tambah_pegawai') }}" method="POST" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">NIP *</label>
+                    <input type="text" name="nip" required placeholder="Contoh: 19850920 201001 1 008" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Nama Pegawai (Lengkap & Gelar) *</label>
+                    <input type="text" name="nama_pegawai" required placeholder="Contoh: Apt. Budi Santoso, S.Farm" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Jabatan</label>
+                    <input type="text" name="jabatan" placeholder="Contoh: Apoteker / Dokter Umum / Bidan" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Unit Tugas</label>
+                    <input type="text" name="unit_tugas" placeholder="Contoh: Gudang Farmasi / Poli Umum / KIA" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">No. HP / WhatsApp</label>
+                    <input type="text" name="no_hp" placeholder="Contoh: 08123456789" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="pt-3 border-t border-slate-800 flex justify-end gap-2">
+                    <button type="button" @click="showAddModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-500 text-slate-950 rounded-xl font-bold">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Edit Pegawai -->
+    <div x-show="showEditModal" x-cloak class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div @click.away="showEditModal = false" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h4 class="font-bold text-slate-100 text-sm">Edit Data Pegawai</h4>
+                <button @click="showEditModal = false" class="text-slate-400 hover:text-white font-bold">&times;</button>
+            </div>
+
+            <form :action="'{{ url_for('pegawai.list_pegawai') }}' + editData.id + '/edit'" method="POST" class="space-y-3 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">NIP *</label>
+                    <input type="text" name="nip" x-model="editData.nip" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Nama Pegawai *</label>
+                    <input type="text" name="nama_pegawai" x-model="editData.nama_pegawai" required class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Jabatan</label>
+                    <input type="text" name="jabatan" x-model="editData.jabatan" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Unit Tugas</label>
+                    <input type="text" name="unit_tugas" x-model="editData.unit_tugas" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">No. HP</label>
+                    <input type="text" name="no_hp" x-model="editData.no_hp" class="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-xl text-slate-100 focus:outline-none focus:border-emerald-500">
+                </div>
+
+                <div class="pt-3 border-t border-slate-800 flex justify-end gap-2">
+                    <button type="button" @click="showEditModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-500 text-slate-950 rounded-xl font-bold">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Import Pegawai -->
+    <div x-show="showImportModal" x-cloak class="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div @click.away="showImportModal = false" class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-4">
+            <div class="flex items-center justify-between pb-3 border-b border-slate-800">
+                <h4 class="font-bold text-slate-100 text-sm">Impor Masal Data Pegawai (CSV/JSON)</h4>
+                <button @click="showImportModal = false" class="text-slate-400 hover:text-white font-bold">&times;</button>
+            </div>
+
+            <form action="{{ url_for('pegawai.import_pegawai_bulk') }}" method="POST" enctype="multipart/form-data" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Unggah File (.csv atau .json)</label>
+                    <input type="file" name="file" accept=".csv,.json" class="block w-full text-slate-400 file:mr-4 file:py-2 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20 bg-slate-950 border border-slate-800 rounded-xl p-1.5">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-300 mb-1">Atau Tempel (Paste) Teks CSV</label>
+                    <textarea name="raw_data" rows="5" placeholder="Format CSV (Header: nip;nama;jabatan;unit_tugas;no_hp)" class="w-full p-2.5 bg-slate-950 border border-slate-800 rounded-xl font-mono text-slate-100 focus:outline-none focus:border-emerald-500"></textarea>
+                </div>
+
+                <div class="pt-3 border-t border-slate-800 flex justify-end gap-2">
+                    <button type="button" @click="showImportModal = false" class="px-4 py-2 bg-slate-800 text-slate-300 rounded-xl font-bold">Batal</button>
+                    <button type="submit" class="px-4 py-2 bg-emerald-500 text-slate-950 rounded-xl font-bold">Proses Impor</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

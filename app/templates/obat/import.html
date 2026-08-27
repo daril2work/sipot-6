@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Bulk Data Obat - Gudang Farmasi Puskesmas{% endblock %}
+{% block header_title %}Impor Masal Master Data Obat{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-xl font-bold text-slate-100">Impor Masal Data Obat (Bulk Import)</h3>
+            <p class="text-xs text-slate-400">Unggah file CSV / JSON atau tempel teks data obat untuk didaftarkan sekaligus.</p>
+        </div>
+        <a href="{{ url_for('obat.list_obat') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium">
+            &larr; Kembali ke Master Obat
+        </a>
+    </div>
+
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 p-6 space-y-6 shadow-xl">
+        
+        <!-- Format Example Banner -->
+        <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 text-xs space-y-2">
+            <h4 class="font-bold text-emerald-400">💡 Contoh Format Teks CSV / JSON:</h4>
+            <p class="text-slate-300">Format CSV (Header: <code>kode;nama;sediaan;satuan;kategori;harga;min</code>):</p>
+            <pre class="bg-slate-900 p-2.5 rounded-lg border border-slate-800 text-slate-300 font-mono text-[11px] overflow-x-auto">kode;nama;sediaan;satuan;kategori;harga;min
+OBT-101;Paracetamol 500mg;Tablet;Tablet;Obat Oral;150;200
+OBT-102;Lidocain Inj 2%;Injeksi;Ampul;Obat Injeksi;2500;50</pre>
+        </div>
+
+        <form action="{{ url_for('obat.import_obat_bulk') }}" method="POST" enctype="multipart/form-data" class="space-y-5">
+            
+            <!-- File Upload -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-2">Unggah File (.csv atau .json)</label>
+                <input type="file" name="file" accept=".csv,.json" class="block w-full text-xs text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-emerald-500/10 file:text-emerald-400 hover:file:bg-emerald-500/20 bg-slate-950 border border-slate-800 rounded-xl p-1.5 cursor-pointer">
+            </div>
+
+            <!-- Atau Paste Raw Data -->
+            <div>
+                <label class="block text-xs font-semibold text-slate-300 mb-2">Atau Tempel (Paste) Teks Data Obat di Sini</label>
+                <textarea name="raw_data" rows="8" placeholder="Tempel teks format CSV atau JSON..." class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-100 font-mono focus:outline-none focus:border-emerald-500"></textarea>
+            </div>
+
+            <div class="pt-2 flex justify-end">
+                <button type="submit" class="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl text-xs transition-all flex items-center gap-2">
+                    🚀 Impor Masal Data Obat
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+{% endblock %}

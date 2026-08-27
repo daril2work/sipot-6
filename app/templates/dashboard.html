@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard Dual-POV - Gudang Farmasi Puskesmas{% endblock %}
+{% block header_title %}Dashboard Sistem Informasi Farmasi Puskesmas{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Dual-POV Perspective Toggle Header -->
+    <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg font-bold flex-shrink-0">
+                🏥
+            </div>
+            <div>
+                <h3 class="font-bold text-slate-100 text-sm">Pilih Sudut Pandang Operasional</h3>
+                <p class="text-xs text-slate-400">Beralih antara laporan LPLPO Kemenkes dan kontrol inventaris harian POS.</p>
+            </div>
+        </div>
+
+        <!-- Mode Switcher Buttons -->
+        <div class="flex items-center p-1 bg-slate-950 rounded-xl border border-slate-800 text-xs font-medium w-full md:w-auto">
+            <a href="{{ url_for('dashboard.index', mode='lplpo') }}" class="flex-1 md:flex-none px-3.5 py-1.5 rounded-lg transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap {{ 'bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30' if active_mode == 'lplpo' else 'text-slate-400 hover:text-slate-200' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                POV LPLPO (Kemenkes)
+            </a>
+            <a href="{{ url_for('dashboard.index', mode='operasional') }}" class="flex-1 md:flex-none px-3.5 py-1.5 rounded-lg transition-all text-center flex items-center justify-center gap-2 whitespace-nowrap {{ 'bg-emerald-500/15 text-emerald-400 font-semibold border border-emerald-500/30' if active_mode == 'operasional' else 'text-slate-400 hover:text-slate-200' }}">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                POV Operasional & POS
+            </a>
+        </div>
+    </div>
+
+    <!-- ==================== PERSPEKTIF LPLPO PUSKESMAS ==================== -->
+    {% if active_mode == 'lplpo' %}
+    <div class="space-y-6">
+
+        <!-- LPLPO Active Period Hero Banner -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+                <div class="flex items-center gap-2 mb-1.5">
+                    <span class="px-2.5 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-semibold rounded text-[11px] uppercase tracking-wider">
+                        PERIODE LPLPO AKTIF
+                    </span>
+                    {% if latest_lplpo %}
+                    <span class="text-xs text-slate-400 font-mono">Status: <span class="text-emerald-400 font-semibold">{{ latest_lplpo.status }}</span></span>
+                    {% endif %}
+                </div>
+                <h2 class="text-xl font-bold text-slate-100">
+                    {% if latest_lplpo %}
+                    LPLPO Periode {{ latest_lplpo.nama_bulan }} {{ latest_lplpo.tahun }}
+                    {% else %}
+                    Belum Ada LPLPO Digenerate
+                    {% endif %}
+                </h2>
+                <p class="text-xs text-slate-400 mt-1 max-w-2xl">
+                    Laporan Pemakaian dan Lembar Permintaan Obat mengkalkulasi Stok Awal, Penerimaan SBBK GFK, Pemakaian Sub-Unit, dan Permintaan Kebutuhan Obat.
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3 flex-shrink-0">
+                {% if latest_lplpo %}
+                <a href="{{ url_for('lplpo.detail_lplpo', id=latest_lplpo.id) }}" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition-all text-xs flex items-center gap-2">
+                    Buka Matriks Lengkap LPLPO &rarr;
+                </a>
+                {% else %}
+                <a href="{{ url_for('lplpo.generate_lplpo') }}" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition-all text-xs flex items-center gap-2">
+                    Generate LPLPO Bulan Ini
+                </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Metric Cards LPLPO -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <!-- Card 1: Total Persediaan LPLPO -->
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Persediaan LPLPO</p>
+                    <h4 class="text-xl font-bold text-emerald-400 mt-1">{{ total_lplpo_persediaan|number }} <span class="text-xs text-slate-500 font-normal">satuan</span></h4>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Stok Awal + Penerimaan</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+                    📦
+                </div>
+            </div>
+
+            <!-- Card 2: Total Pemakaian Sub-Unit -->
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Pemakaian Poli/Pustu</p>
+                    <h4 class="text-xl font-bold text-blue-400 mt-1">{{ total_lplpo_pemakaian|number }} <span class="text-xs text-slate-500 font-normal">satuan</span></h4>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Total Pengeluaran Bulan Ini</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-lg">
+                    🔄
+                </div>
+            </div>
+
+            <!-- Card 3: Total Permintaan ke GFK -->
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Permintaan Obat ke GFK</p>
+                    <h4 class="text-xl font-bold text-amber-400 mt-1">{{ total_lplpo_permintaan|number }} <span class="text-xs text-slate-500 font-normal">satuan</span></h4>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Kebutuhan Stok Optimum</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+                    📋
+                </div>
+            </div>
+
+            <!-- Card 4: Total Item Obat LPLPO -->
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Item Obat Terdata</p>
+                    <h4 class="text-xl font-bold text-slate-100 mt-1">{{ lplpo_items|length }} <span class="text-xs text-slate-500 font-normal">jenis</span></h4>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Formularium Puskesmas</p>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 text-purple-400 flex items-center justify-center text-lg">
+                    💊
+                </div>
+            </div>
+        </div>
+
+        <!-- Ringkasan Matriks LPLPO Preview -->
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 overflow-hidden">
+            <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                <div>
+                    <h4 class="font-bold text-slate-100 text-sm">Ringkasan Matriks LPLPO Bulan Berjalan</h4>
+                    <p class="text-xs text-slate-400">Pratinjau Stok Awal, Penerimaan, Persediaan, Pemakaian, dan Permintaan.</p>
+                </div>
+                {% if latest_lplpo %}
+                <a href="{{ url_for('lplpo.detail_lplpo', id=latest_lplpo.id) }}" class="text-xs text-emerald-400 hover:underline font-semibold whitespace-nowrap">Buka Matriks Penuh &rarr;</a>
+                {% endif %}
+            </div>
+
+            {% if lplpo_items %}
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left">
+                    <thead class="bg-slate-950 text-slate-400 uppercase font-semibold">
+                        <tr>
+                            <th class="px-3 py-2.5 whitespace-nowrap">Kode</th>
+                            <th class="px-3 py-2.5">Nama Obat</th>
+                            <th class="px-3 py-2.5 text-right whitespace-nowrap">Stok Awal</th>
+                            <th class="px-3 py-2.5 text-right whitespace-nowrap">Penerimaan</th>
+                            <th class="px-3 py-2.5 text-right text-emerald-400 font-bold whitespace-nowrap">Persediaan</th>
+                            <th class="px-3 py-2.5 text-right whitespace-nowrap">Pemakaian</th>
+                            <th class="px-3 py-2.5 text-right text-blue-400 font-bold whitespace-nowrap">Sisa Stok</th>
+                            <th class="px-3 py-2.5 text-right text-amber-300 whitespace-nowrap">Permintaan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60 font-mono">
+                        {% for item in lplpo_items %}
+                        <tr class="hover:bg-slate-800/50">
+                            <td class="px-3 py-2 text-emerald-400 font-bold whitespace-nowrap">{{ item.obat.kode_obat }}</td>
+                            <td class="px-3 py-2 font-sans font-medium text-slate-200 max-w-xs truncate">{{ item.obat.nama_obat }}</td>
+                            <td class="px-3 py-2 text-right text-slate-300 whitespace-nowrap">{{ item.stok_awal|number }}</td>
+                            <td class="px-3 py-2 text-right text-slate-300 whitespace-nowrap">{{ item.penerimaan|number }}</td>
+                            <td class="px-3 py-2 text-right text-emerald-400 font-bold bg-emerald-950/20 whitespace-nowrap">{{ item.persediaan|number }}</td>
+                            <td class="px-3 py-2 text-right text-slate-300 whitespace-nowrap">{{ item.pemakaian|number }}</td>
+                            <td class="px-3 py-2 text-right text-blue-400 font-bold bg-blue-950/20 whitespace-nowrap">{{ item.sisa_stok|number }}</td>
+                            <td class="px-3 py-2 text-right text-amber-300 font-bold bg-amber-950/20 whitespace-nowrap">{{ item.permintaan|number }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-xs text-slate-500 py-6 text-center">Belum ada data matriks LPLPO. Silakan jalankan "Generate LPLPO".</p>
+            {% endif %}
+        </div>
+
+    </div>
+    {% endif %}
+
+    <!-- ==================== PERSPEKTIF OPERASIONAL & POS INVENTORY ==================== -->
+    {% if active_mode == 'operasional' %}
+    <div class="space-y-6">
+
+        <!-- Hero Banner POS -->
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div>
+                <h3 class="text-lg font-bold text-slate-100 mb-0.5">Mode Operasional Inventory & POS Pelayanan</h3>
+                <p class="text-slate-400 text-xs">Kelola stok fisik batch (FEFO), lakukan penyerahan cepat POS ke Poli/Pasien, dan pantau alert kedaluwarsa.</p>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <a href="{{ url_for('pos.pos_index') }}" class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl transition-all text-xs flex items-center gap-2">
+                    🛒 Buka Kasir POS Pelayanan
+                </a>
+            </div>
+        </div>
+
+        <!-- Metric Tiles Grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Jenis Obat</p>
+                    <h4 class="text-xl font-bold text-slate-100 mt-1">{{ total_jenis_obat|number }} <span class="text-xs text-slate-500 font-normal">item</span></h4>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-400 flex items-center justify-center text-lg">💊</div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Total Stok Fisik</p>
+                    <h4 class="text-xl font-bold text-emerald-400 mt-1">{{ total_stok_obat|number }} <span class="text-xs text-slate-500 font-normal">satuan</span></h4>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">📦</div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Obat Menjelang ED (&le; 90 Hari)</p>
+                    <h4 class="text-xl font-bold text-amber-400 mt-1">{{ near_expired_count }} <span class="text-xs text-slate-500 font-normal">batch</span></h4>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg">⏰</div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+                <div>
+                    <p class="text-[11px] font-medium text-slate-400 uppercase tracking-wider">Stok Kritis / Menipis</p>
+                    <h4 class="text-xl font-bold text-rose-400 mt-1">{{ low_stock_count }} <span class="text-xs text-slate-500 font-normal">item</span></h4>
+                </div>
+                <div class="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 flex items-center justify-center text-lg">⚠️</div>
+            </div>
+        </div>
+
+        <!-- Alert Tables Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+            <!-- Alert FEFO ED -->
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5">
+                <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+                        <h4 class="font-bold text-slate-100 text-sm">Alert FEFO (Expired Date Terdekat)</h4>
+                    </div>
+                </div>
+
+                {% if near_expired_batches %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left">
+                        <thead class="text-slate-400 border-b border-slate-800">
+                            <tr>
+                                <th class="pb-2">Nama Obat</th>
+                                <th class="pb-2">No Batch</th>
+                                <th class="pb-2">Tgl Expired</th>
+                                <th class="pb-2 text-right">Sisa Stok</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60">
+                            {% for b in near_expired_batches %}
+                            <tr>
+                                <td class="py-2 font-medium text-slate-200 truncate max-w-xs">{{ b.obat.nama_obat }}</td>
+                                <td class="py-2 text-slate-400 font-mono whitespace-nowrap">{{ b.no_batch }}</td>
+                                <td class="py-2 whitespace-nowrap">
+                                    <span class="px-2 py-0.5 rounded text-amber-300 bg-amber-500/10 border border-amber-500/20 font-semibold">
+                                        {{ b.expired_date.strftime('%d-%m-%Y') }} ({{ b.days_until_expired }} hr)
+                                    </span>
+                                </td>
+                                <td class="py-2 text-right font-semibold text-slate-100 whitespace-nowrap">{{ b.stok_sekarang|number }} {{ b.obat.satuan }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-xs text-slate-500 py-6 text-center">Tidak ada stok obat yang mendekati expired dalam 90 hari.</p>
+                {% endif %}
+            </div>
+
+            <!-- Alert Stok Kritis -->
+            <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5">
+                <div class="flex items-center justify-between pb-3 mb-3 border-b border-slate-800">
+                    <div class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                        <h4 class="font-bold text-slate-100 text-sm">Alert Stok Kritis (&le; Minimum)</h4>
+                    </div>
+                </div>
+
+                {% if low_stock_obats %}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-xs text-left">
+                        <thead class="text-slate-400 border-b border-slate-800">
+                            <tr>
+                                <th class="pb-2">Kode</th>
+                                <th class="pb-2">Nama Obat</th>
+                                <th class="pb-2 text-right">Stok Minimal</th>
+                                <th class="pb-2 text-right">Stok Fisik</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-800/60">
+                            {% for o in low_stock_obats %}
+                            <tr>
+                                <td class="py-2 text-slate-400 font-mono whitespace-nowrap">{{ o.kode_obat }}</td>
+                                <td class="py-2 font-medium text-slate-200 truncate max-w-xs">{{ o.nama_obat }}</td>
+                                <td class="py-2 text-right text-slate-400 whitespace-nowrap">{{ o.stok_minimum|number }} {{ o.satuan }}</td>
+                                <td class="py-2 text-right whitespace-nowrap">
+                                    <span class="px-2 py-0.5 rounded text-rose-300 bg-rose-500/10 border border-rose-500/20 font-bold">
+                                        {{ o.total_stok|number }} {{ o.satuan }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-xs text-slate-500 py-6 text-center">Semua obat dalam kondisi stok aman di atas batas minimum.</p>
+                {% endif %}
+            </div>
+
+        </div>
+
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

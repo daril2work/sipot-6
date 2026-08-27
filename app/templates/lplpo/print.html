@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cetak LPLPO - {{ lplpo.nama_puskesmas }} {{ lplpo.nama_bulan }} {{ lplpo.tahun }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            color: #000;
+            background: #fff;
+            margin: 0;
+            padding: 20px;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header h2 {
+            margin: 0;
+            font-size: 16px;
+            text-transform: uppercase;
+        }
+        .header h3 {
+            margin: 5px 0 0 0;
+            font-size: 13px;
+            font-weight: normal;
+        }
+        .meta-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 25px;
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 5px 6px;
+            font-size: 10px;
+        }
+        th {
+            background-color: #f2f2f2;
+            text-align: center;
+            font-weight: bold;
+        }
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 30px;
+            page-break-inside: avoid;
+        }
+        .sig-box {
+            text-align: center;
+            width: 250px;
+        }
+        .sig-space {
+            height: 60px;
+        }
+        .no-print {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+        @media print {
+            .no-print { display: none; }
+            body { padding: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="no-print">
+        <button onclick="window.print()" style="padding: 8px 16px; background: #0284c7; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold;">
+            🖨️ Cetak Dokumen LPLPO
+        </button>
+    </div>
+
+    <div class="header">
+        <h2>LAPORAN PEMAKAIAN DAN LEMBAR PERMINTAAN OBAT (LPLPO)</h2>
+        <h3>PUSKESMAS: {{ lplpo.nama_puskesmas.upper() }}</h3>
+    </div>
+
+    <div class="meta-info">
+        <div>PERIODE: {{ lplpo.nama_bulan.upper() }} {{ lplpo.tahun }}</div>
+        <div>TANGGAL DIBUAT: {{ lplpo.tanggal_laporan.strftime('%d-%m-%Y') }}</div>
+        <div>STATUS: {{ lplpo.status.upper() }}</div>
+    </div>
+
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2" style="width:30px;">NO</th>
+                <th rowspan="2" style="width:70px;">KODE OBAT</th>
+                <th rowspan="2">NAMA OBAT / SEDIAAN</th>
+                <th rowspan="2" style="width:60px;">SATUAN</th>
+                <th rowspan="2" style="width:60px;">STOK AWAL</th>
+                <th rowspan="2" style="width:60px;">PENERIMAAN</th>
+                <th rowspan="2" style="width:65px;">PERSEDIAAN</th>
+                <th rowspan="2" style="width:60px;">PEMAKAIAN</th>
+                <th rowspan="2" style="width:60px;">SISA STOK</th>
+                <th rowspan="2" style="width:65px;">STOK OPTIMUM</th>
+                <th colspan="2">PERMINTAAN & PEMBERIAN</th>
+            </tr>
+            <tr>
+                <th style="width:65px;">PERMINTAAN</th>
+                <th style="width:65px;">PEMBERIAN</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in items %}
+            <tr>
+                <td class="text-center">{{ loop.index }}</td>
+                <td class="text-center" style="font-family:monospace;">{{ item.obat.kode_obat }}</td>
+                <td>{{ item.obat.nama_obat }}</td>
+                <td class="text-center">{{ item.obat.satuan }}</td>
+                <td class="text-right">{{ item.stok_awal }}</td>
+                <td class="text-right">{{ item.penerimaan }}</td>
+                <td class="text-right" style="font-weight:bold;">{{ item.persediaan }}</td>
+                <td class="text-right">{{ item.pemakaian }}</td>
+                <td class="text-right" style="font-weight:bold;">{{ item.sisa_stok }}</td>
+                <td class="text-right">{{ item.stok_optimum }}</td>
+                <td class="text-right" style="font-weight:bold;">{{ item.permintaan }}</td>
+                <td class="text-right" style="font-weight:bold;">{{ item.pemberian }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="signatures">
+        <div class="sig-box">
+            <div>Mengetahui,</div>
+            <div>Kepala Puskesmas</div>
+            <div class="sig-space"></div>
+            <div style="font-weight:bold; text-decoration:underline;">{{ lplpo.kepala_puskesmas }}</div>
+            <div>NIP. {{ lplpo.nip_kepala }}</div>
+        </div>
+
+        <div class="sig-box">
+            <div>Yang Menyerahkan / Melaporkan,</div>
+            <div>Pengelola Obat Puskesmas</div>
+            <div class="sig-space"></div>
+            <div style="font-weight:bold; text-decoration:underline;">{{ lplpo.pengelola_obat }}</div>
+            <div>NIP. {{ lplpo.nip_pengelola }}</div>
+        </div>
+    </div>
+
+</body>
+</html>

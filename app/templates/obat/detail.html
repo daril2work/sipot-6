@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+
+{% block title %}Detail Obat - {{ obat.nama_obat }}{% endblock %}
+{% block header_title %}Detail & Kartu Stok Batch Obat{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <!-- Header info -->
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-3">
+                <span class="font-mono text-sm px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg font-bold">{{ obat.kode_obat }}</span>
+                <h3 class="text-2xl font-bold text-slate-100">{{ obat.nama_obat }}</h3>
+            </div>
+            <p class="text-xs text-slate-400 mt-1">Sediaan: {{ obat.bentuk_sediaan }} | Satuan: {{ obat.satuan }} | Kategori: {{ obat.kategori }}</p>
+        </div>
+
+        <div class="flex items-center gap-3">
+            <a href="{{ url_for('obat.edit_obat', id=obat.id) }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-sm font-medium rounded-xl">
+                Edit Obat
+            </a>
+            <a href="{{ url_for('obat.list_obat') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-xl">
+                &larr; Kembali
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Stats -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+            <p class="text-xs text-slate-400 uppercase font-medium">Total Stok Fisik</p>
+            <h4 class="text-2xl font-bold text-emerald-400 mt-1">{{ obat.total_stok|number }} <span class="text-xs font-normal text-slate-400">{{ obat.satuan }}</span></h4>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+            <p class="text-xs text-slate-400 uppercase font-medium">Stok Minimum Alert</p>
+            <h4 class="text-2xl font-bold text-slate-100 mt-1">{{ obat.stok_minimum|number }} <span class="text-xs font-normal text-slate-400">{{ obat.satuan }}</span></h4>
+        </div>
+        <div class="p-5 rounded-2xl bg-slate-900 border border-slate-800">
+            <p class="text-xs text-slate-400 uppercase font-medium">Status Prioritas FEFO</p>
+            {% set ed_batch = obat.batch_terdekat_ed %}
+            {% if ed_batch %}
+                <h4 class="text-lg font-bold text-amber-400 mt-1">{{ ed_batch.no_batch }}</h4>
+                <p class="text-xs text-slate-400">ED: {{ ed_batch.expired_date.strftime('%d-%m-%Y') }} ({{ ed_batch.days_until_expired }} hr)</p>
+            {% else %}
+                <h4 class="text-lg font-bold text-slate-500 mt-1">Kosong</h4>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Batch Table -->
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+        <div class="p-5 border-b border-slate-800 flex items-center justify-between">
+            <h4 class="font-bold text-slate-100 text-sm">Daftar Batch Obat (Urutan Prioritas Pengeluaran FEFO)</h4>
+            <span class="text-xs text-slate-400">Total {{ batches|length }} Batch</span>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs uppercase bg-slate-950/80 text-slate-400 border-b border-slate-800">
+                    <tr>
+                        <th class="px-5 py-3.5">No Batch</th>
+                        <th class="px-5 py-3.5">Tanggal Expired</th>
+                        <th class="px-5 py-3.5">Sumber Dana</th>
+                        <th class="px-5 py-3.5 text-right">Stok Awal</th>
+                        <th class="px-5 py-3.5 text-right">Stok Saat Ini</th>
+                        <th class="px-5 py-3.5 text-center">Status Batch</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    {% if batches %}
+                        {% for b in batches %}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-5 py-4 font-mono font-semibold text-slate-200">{{ b.no_batch }}</td>
+                            <td class="px-5 py-4">
+                                {% if b.days_until_expired <= 0 %}
+                                    <span class="px-2.5 py-1 rounded text-xs bg-rose-950 text-rose-300 font-bold border border-rose-800">
+                                        {{ b.expired_date.strftime('%d-%m-%Y') }} (KADALUARSA)
+                                    </span>
+                                {% elif b.days_until_expired <= 90 %}
+                                    <span class="px-2.5 py-1 rounded text-xs bg-amber-500/10 text-amber-300 font-semibold border border-amber-500/20">
+                                        {{ b.expired_date.strftime('%d-%m-%Y') }} ({{ b.days_until_expired }} hr lagi)
+                                    </span>
+                                {% else %}
+                                    <span class="text-slate-300">{{ b.expired_date.strftime('%d-%m-%Y') }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-5 py-4 text-slate-400">{{ b.sumber_dana }}</td>
+                            <td class="px-5 py-4 text-right text-slate-400">{{ b.stok_awal|number }}</td>
+                            <td class="px-5 py-4 text-right font-bold text-slate-100">{{ b.stok_sekarang|number }}</td>
+                            <td class="px-5 py-4 text-center">
+                                {% if b.stok_sekarang == 0 %}
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs bg-slate-800 text-slate-500">Habis</span>
+                                {% else %}
+                                    <span class="px-2.5 py-0.5 rounded-full text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Aktif</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-slate-500 text-sm">Belum ada batch tercatat untuk obat ini.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

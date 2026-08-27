@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+
+{% block title %}Daftar LPLPO Bulanan - Gudang Farmasi Puskesmas{% endblock %}
+{% block header_title %}Modul Laporan LPLPO Bulanan{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold text-slate-100">Daftar Dokumen LPLPO Bulanan</h3>
+            <p class="text-xs text-slate-400">Laporan Pemakaian dan Lembar Permintaan Obat (LPLPO) Puskesmas ke Dinas Kesehatan.</p>
+        </div>
+
+        <a href="{{ url_for('lplpo.generate_lplpo') }}" class="px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold rounded-xl transition-all shadow-lg shadow-emerald-500/20 flex items-center gap-2 text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Generate LPLPO Baru
+        </a>
+    </div>
+
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs uppercase bg-slate-950/80 text-slate-400 border-b border-slate-800">
+                    <tr>
+                        <th class="px-5 py-3.5">Periode Bulan & Tahun</th>
+                        <th class="px-5 py-3.5">Nama Puskesmas</th>
+                        <th class="px-5 py-3.5">Tanggal Laporan</th>
+                        <th class="px-5 py-3.5 text-center">Jumlah Item Obat</th>
+                        <th class="px-5 py-3.5 text-center">Status</th>
+                        <th class="px-5 py-3.5 text-center">Aksi & Ekspor</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    {% if lplpo_list %}
+                        {% for l in lplpo_list %}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-5 py-4 font-bold text-slate-100">
+                                <a href="{{ url_for('lplpo.detail_lplpo', id=l.id) }}" class="hover:text-emerald-400 hover:underline">
+                                    {{ l.nama_bulan }} {{ l.tahun }}
+                                </a>
+                            </td>
+                            <td class="px-5 py-4 text-slate-300">{{ l.nama_puskesmas }}</td>
+                            <td class="px-5 py-4 text-slate-400 text-xs">{{ l.tanggal_laporan.strftime('%d-%m-%Y') }}</td>
+                            <td class="px-5 py-4 text-center font-bold text-slate-200">{{ l.items|length }} item</td>
+                            <td class="px-5 py-4 text-center">
+                                <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                    {{ l.status }}
+                                </span>
+                            </td>
+                            <td class="px-5 py-4 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="{{ url_for('lplpo.detail_lplpo', id=l.id) }}" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-lg text-xs font-medium">
+                                        Lihat Matriks
+                                    </a>
+                                    <a href="{{ url_for('lplpo.download_excel', id=l.id) }}" class="px-3 py-1.5 bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 rounded-lg text-xs font-bold flex items-center gap-1">
+                                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                                        Excel (.xlsx)
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-slate-500 text-sm">
+                                Belum ada dokumen LPLPO yang digenerate. Klik "Generate LPLPO Baru".
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

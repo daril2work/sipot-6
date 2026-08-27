@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id" class="h-full bg-slate-900 text-slate-100">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Gudang Farmasi Puskesmas - LPLPO{% endblock %}</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="h-full bg-slate-950 text-slate-100 flex" x-data="{ sidebarOpen: false, sidebarCollapsed: false }">
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false" class="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"></div>
+
+    <!-- Sidebar Navigation -->
+    <aside :class="[sidebarOpen ? 'translate-x-0' : '-translate-x-full', sidebarCollapsed ? 'lg:w-20' : 'lg:w-64']" class="fixed inset-y-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 transition-all duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 flex flex-col justify-between select-none">
+        <div>
+            <!-- Header Brand -->
+            <div class="h-16 flex items-center justify-between px-4 border-b border-slate-800 bg-slate-900/50">
+                <div class="flex items-center gap-3 overflow-hidden">
+                    <div class="w-9 h-9 min-w-[2.25rem] rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-400 flex items-center justify-center text-slate-950 font-bold text-xl shadow-lg shadow-emerald-500/20">
+                        💊
+                    </div>
+                    <div x-show="!sidebarCollapsed" class="transition-all duration-200">
+                        <h1 class="font-bold text-slate-100 text-sm tracking-wide whitespace-nowrap">FARMASI PUSKESMAS</h1>
+                        <p class="text-[11px] text-emerald-400 font-medium whitespace-nowrap">Sistem LPLPO v1.0</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Collapse Button inside Sidebar Header -->
+                <button @click="sidebarCollapsed = !sidebarCollapsed" class="hidden lg:flex p-1.5 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors" :title="sidebarCollapsed ? 'Perluas Sidebar' : 'Ciutkan Sidebar'">
+                    <svg class="w-5 h-5 transition-transform duration-300" :class="sidebarCollapsed ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 19l-7-7 7-7m8 14l-7-7 7-7"/></svg>
+                </button>
+            </div>
+
+            <!-- Navigation Links -->
+            <nav class="p-3 space-y-1 text-sm font-medium">
+                
+                <!-- Dashboard -->
+                <a href="{{ url_for('dashboard.index') }}" :title="sidebarCollapsed ? 'Dashboard' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if request.endpoint == 'dashboard.index' else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Dashboard</span>
+                </a>
+
+                <!-- Section 1 -->
+                <div x-show="!sidebarCollapsed" class="pt-3 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Inventory & Master</div>
+                <div x-show="sidebarCollapsed" class="pt-2 border-t border-slate-800/80 my-1"></div>
+
+                <a href="{{ url_for('obat.list_obat') }}" :title="sidebarCollapsed ? 'Master Obat' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'obat' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L5.6 15.12a2 2 0 00-1.022.547l-1.6 1.6a2 2 0 000 2.828l1.6 1.6a2 2 0 002.828 0l1.6-1.6a2 2 0 00.547-1.022l.477-2.387a6 6 0 00-.517-3.86l-.158-.318a6 6 0 01-.517-3.86l.477-2.387a2 2 0 00-.547-1.022l-1.6-1.6a2 2 0 00-2.828 0l-1.6 1.6a2 2 0 000 2.828l1.6 1.6z"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Master Obat</span>
+                </a>
+
+                <a href="{{ url_for('subunit.list_subunit') }}" :title="sidebarCollapsed ? 'Sub-Unit / Poli' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'subunit' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Sub-Unit / Poli</span>
+                </a>
+
+                <a href="{{ url_for('pegawai.list_pegawai') }}" :title="sidebarCollapsed ? 'Master Pegawai / SDM' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'pegawai' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Master Pegawai</span>
+                </a>
+
+                <!-- Section 2 -->
+                <div x-show="!sidebarCollapsed" class="pt-3 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">POS & Transaksi Stok</div>
+                <div x-show="sidebarCollapsed" class="pt-2 border-t border-slate-800/80 my-1"></div>
+
+                <a href="{{ url_for('pos.pos_index') }}" :title="sidebarCollapsed ? 'POS Pelayanan & Distribusi' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'pos' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">POS Pelayanan & Distribusi</span>
+                </a>
+
+                <a href="{{ url_for('transaksi.list_masuk') }}" :title="sidebarCollapsed ? 'Penerimaan (SBBK GFK)' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'masuk' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Penerimaan (SBBK GFK)</span>
+                </a>
+
+                <a href="{{ url_for('transaksi.list_keluar') }}" :title="sidebarCollapsed ? 'Pengeluaran Poli (FEFO)' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'keluar' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Pengeluaran Poli (FEFO)</span>
+                </a>
+
+                <!-- Section 3 -->
+                <div x-show="!sidebarCollapsed" class="pt-3 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Laporan Kemenkes</div>
+                <div x-show="sidebarCollapsed" class="pt-2 border-t border-slate-800/80 my-1"></div>
+
+                <a href="{{ url_for('lplpo.list_lplpo') }}" :title="sidebarCollapsed ? 'Modul LPLPO Bulanan' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'lplpo' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Modul LPLPO Bulanan</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Sidebar Footer -->
+        <div class="p-3 border-t border-slate-800 text-[11px] text-slate-500 overflow-hidden">
+            <span x-show="!sidebarCollapsed" class="truncate block">Puskesmas Sehat Utama &copy; 2026</span>
+            <span x-show="sidebarCollapsed" class="text-center block font-bold text-emerald-400">PKM</span>
+        </div>
+    </aside>
+
+    <!-- Main Content Container -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+
+        <!-- Top Header Bar -->
+        <header class="h-16 bg-slate-900/80 backdrop-blur border-b border-slate-800 flex items-center justify-between px-4 lg:px-8">
+            <div class="flex items-center gap-3 min-w-0">
+                <button @click="sidebarOpen = !sidebarOpen" class="lg:hidden p-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 flex-shrink-0">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+
+                <!-- Desktop Quick Toggle Button on Topbar -->
+                <button @click="sidebarCollapsed = !sidebarCollapsed" class="hidden lg:flex p-2 rounded-lg text-slate-400 hover:text-slate-100 hover:bg-slate-800 transition-colors flex-shrink-0" :title="sidebarCollapsed ? 'Perluas Sidebar' : 'Ciutkan Sidebar'">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/></svg>
+                </button>
+
+                <h2 class="text-sm lg:text-base font-semibold text-slate-100 truncate">
+                    {% block header_title %}Gudang Farmasi Puskesmas{% endblock %}
+                </h2>
+            </div>
+            
+            <div class="flex items-center gap-3 flex-shrink-0">
+                <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 whitespace-nowrap">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    Sistem Aktif (FEFO)
+                </span>
+            </div>
+        </header>
+
+        <!-- Flash Messages Toast -->
+        <div class="px-4 lg:px-8 pt-4">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="mb-4 p-4 rounded-xl flex items-center justify-between shadow-lg text-sm font-medium border {{ 'bg-emerald-950/80 border-emerald-800 text-emerald-200' if category == 'success' else 'bg-rose-950/80 border-rose-800 text-rose-200' if category == 'danger' else 'bg-amber-950/80 border-amber-800 text-amber-200' }}" x-data="{ show: true }" x-show="show">
+                            <div class="flex items-center gap-3">
+                                <span>{{ message }}</span>
+                            </div>
+                            <button @click="show = false" class="text-slate-400 hover:text-slate-200">&times;</button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
+
+        <!-- Dynamic Main Content -->
+        <main class="flex-1 overflow-y-auto p-4 lg:p-8">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>
