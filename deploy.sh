@@ -3,8 +3,8 @@
 
 echo "=== Memulai proses update SIPOT ==="
 
-# Pindah ke direktori aplikasi (Ganti 'sipot-6-flask' dengan nama folder Anda di PythonAnywhere jika berbeda)
-cd ~/sipot-6-flask || { echo "Gagal masuk ke direktori aplikasi. Periksa nama foldernya."; exit 1; }
+# Pindah ke direktori aplikasi (Ganti 'sipot-6' dengan nama folder Anda di PythonAnywhere jika berbeda)
+cd ~/sipot-6 || { echo "Gagal masuk ke direktori aplikasi. Periksa nama foldernya."; exit 1; }
 
 # 1. Menarik perubahan terbaru dari branch main (atau master)
 echo "📥 Pulling perubahan terbaru dari GitHub..."
