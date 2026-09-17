@@ -38,7 +38,7 @@ def create_app(config_class=Config):
     @app.before_request
     def check_authentication():
         from flask import request, redirect, url_for, session
-        allowed_endpoints = ['auth.login', 'static']
+        allowed_endpoints = ['auth.login', 'static', 'webhook.handle_webhook']
         if not session.get('user_id') and request.endpoint and request.endpoint not in allowed_endpoints:
             return redirect(url_for('auth.login'))
 
