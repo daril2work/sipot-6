@@ -124,13 +124,17 @@ def handle_webhook():
         text = msg['text'].strip()
         
         user = User.query.filter_by(telegram_chat_id=chat_id).first()
+        admin_chat_id = current_app.config.get('TELEGRAM_CHAT_ID')
         
+        # Jika perintah /start, biarkan siapa saja memakainya untuk mengecek ID
         if text.startswith('/start'):
             send_telegram_reply(chat_id, f"Halo! Chat ID Anda adalah: <code>{chat_id}</code>\nSilakan berikan ID ini ke Administrator SIPOT untuk ditautkan dengan akun Anda.")
             return jsonify({'status': 'ok'})
             
-        if not user:
-            # Abaikan jika chat_id tidak dikenali dan bukan command /start
+        # Pengecekan Akses: Izinkan jika dia adalah User terdaftar, ATAU jika dia chat di Grup Admin
+        if not user and chat_id != admin_chat_id:
+            if text.startswith('/'):
+                send_telegram_reply(chat_id, "⛔ Akses ditolak. Akun Telegram Anda belum ditautkan dengan SIPOT. Ketik /start untuk melihat Chat ID Anda.")
             return jsonify({'status': 'ok'})
             
         # Fitur cek stok (contoh: /stok paracetamol)
