@@ -104,6 +104,11 @@
                     <span x-show="!sidebarCollapsed" class="truncate">Stok Opname Berkala</span>
                 </a>
 
+                <a href="{{ url_for('permintaan.list_masuk') }}" :title="sidebarCollapsed ? 'Permintaan Masuk' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'permintaan' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Permintaan Masuk</span>
+                </a>
+
                 <!-- Section 3 -->
                 <div x-show="!sidebarCollapsed" class="pt-3 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Laporan Kemenkes</div>
                 <div x-show="sidebarCollapsed" class="pt-2 border-t border-slate-800/80 my-1"></div>
@@ -118,9 +123,14 @@
                 <!-- SubUnit Navigation -->
                 <div x-show="!sidebarCollapsed" class="pt-2 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">Portal Unit Pelayanan</div>
                 
-                <a href="{{ url_for('auth.unit_dashboard') }}" :title="sidebarCollapsed ? 'Dashboard Unit' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors bg-emerald-500/10 text-emerald-400 font-semibold">
+                <a href="{{ url_for('auth.unit_dashboard') }}" :title="sidebarCollapsed ? 'Dashboard Unit' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'dashboard' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
                     <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5m0 0h4m-4 0v-4a2 2 0 012-2h2a2 2 0 012 2v4"/></svg>
                     <span x-show="!sidebarCollapsed" class="truncate">Portal {{ session.get('subunit_nama', 'Unit Pelayanan') }}</span>
+                </a>
+                
+                <a href="{{ url_for('permintaan.list_saya') }}" :title="sidebarCollapsed ? 'Permintaan Obat' : ''" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-colors {{ 'bg-emerald-500/10 text-emerald-400 font-semibold' if 'permintaan' in request.endpoint else 'text-slate-400 hover:bg-slate-800 hover:text-slate-200' }}">
+                    <svg class="w-5 h-5 min-w-[1.25rem]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                    <span x-show="!sidebarCollapsed" class="truncate">Permintaan Obat</span>
                 </a>
                 {% endif %}
 

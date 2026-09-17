@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}Tinjau Permintaan - {{ permintaan.no_permintaan }}{% endblock %}
+{% block header_title %}Tinjau & Setujui Permintaan Obat{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto space-y-6">
+
+    <div class="flex items-center justify-between">
+        <div>
+            <h3 class="text-xl font-bold text-slate-100">Approval Permintaan Obat</h3>
+            <p class="text-xs text-slate-400">Sesuaikan jumlah yang disetujui berdasarkan stok Gudang saat ini.</p>
+        </div>
+        <a href="{{ url_for('permintaan.list_masuk') }}" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-sm font-medium">
+            &larr; Kembali
+        </a>
+    </div>
+
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 p-5 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+            <p class="text-xs text-slate-500 uppercase font-semibold mb-1">Nomor Permintaan</p>
+            <p class="font-mono text-emerald-400 font-bold">{{ permintaan.no_permintaan }}</p>
+        </div>
+        <div>
+            <p class="text-xs text-slate-500 uppercase font-semibold mb-1">Poli / Sub-Unit Peminta</p>
+            <p class="text-slate-100 font-bold">{{ permintaan.subunit.nama_subunit }}</p>
+        </div>
+        <div>
+            <p class="text-xs text-slate-500 uppercase font-semibold mb-1">Tanggal</p>
+            <p class="text-slate-300">{{ permintaan.tanggal_permintaan.strftime('%d %B %Y - %H:%M') }}</p>
+        </div>
+        <div class="md:col-span-3">
+            <p class="text-xs text-slate-500 uppercase font-semibold mb-1">Keterangan</p>
+            <p class="text-slate-300 italic">"{{ permintaan.keterangan }}"</p>
+        </div>
+    </div>
+
+    <form method="POST" action="{{ url_for('permintaan.approve_permintaan', id=permintaan.id) }}" class="space-y-6">
+        
+        <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm text-left">
+                    <thead class="text-xs uppercase bg-slate-950/80 text-slate-400 border-b border-slate-800">
+                        <tr>
+                            <th class="px-5 py-3.5">Nama Obat / BMHP</th>
+                            <th class="px-5 py-3.5 text-center">Stok Gudang (Tersedia)</th>
+                            <th class="px-5 py-3.5 text-center">Jumlah Diminta Poli</th>
+                            <th class="px-5 py-3.5 text-center bg-slate-900/50">Jumlah Disetujui</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-800/60">
+                        {% for item in permintaan.items %}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-5 py-4">
+                                <p class="font-bold text-slate-100">{{ item.obat.nama_obat }}</p>
+                                <p class="text-[10px] text-slate-400">{{ item.obat.bentuk_sediaan }} &bull; {{ item.obat.satuan }}</p>
+                                <input type="hidden" name="item_id[]" value="{{ item.id }}">
+                            </td>
+                            <td class="px-5 py-4 text-center">
+                                {% if item.obat.total_stok <= 0 %}
+                                    <span class="px-2 py-1 bg-rose-500/10 text-rose-400 border border-rose-500/20 rounded-lg font-bold text-xs">Kosong</span>
+                                {% else %}
+                                    <span class="font-bold text-emerald-400">{{ item.obat.total_stok|number }}</span> <span class="text-xs text-slate-500">{{ item.obat.satuan }}</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-5 py-4 text-center font-bold text-slate-200">
+                                {{ item.jumlah_diminta|number }}
+                            </td>
+                            <td class="px-5 py-4 text-center bg-slate-900/50">
+                                <input type="number" name="jumlah_disetujui[]" min="0" max="{{ item.obat.total_stok }}" value="{{ item.jumlah_diminta if item.jumlah_diminta <= item.obat.total_stok else item.obat.total_stok }}" class="w-24 px-3 py-2 bg-slate-950 border border-emerald-500/50 rounded-xl text-sm font-bold text-emerald-400 text-center focus:outline-none focus:border-emerald-400">
+                                <p class="text-[10px] text-slate-500 mt-1">Ubah jika perlu</p>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="flex items-center justify-between border-t border-slate-800 pt-6">
+            <button type="submit" name="action" value="reject" class="px-5 py-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-medium rounded-xl text-sm border border-rose-500/20 transition-all">
+                Tolak Permintaan (Reject)
+            </button>
+            
+            <button type="submit" name="action" value="approve" class="px-6 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold rounded-xl shadow-lg shadow-emerald-500/20 text-sm flex items-center gap-2 transition-all">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Setujui & Proses Pengeluaran FEFO
+            </button>
+        </div>
+
+    </form>
+
+</div>
+{% endblock %}

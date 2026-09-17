@@ -43,6 +43,7 @@
                                     <div class="text-xs text-slate-300">
                                         <span class="font-semibold text-slate-100">{{ item.obat.nama_obat }}</span>: 
                                         <span class="font-mono text-emerald-400 font-bold">{{ item.jumlah|number }} {{ item.obat.satuan }}</span> 
+                                        <span class="text-slate-400">@ {{ item.batch.harga_batch|currency }}</span>
                                         <span class="text-slate-500">(Alokasi FEFO Batch: {{ item.batch.no_batch }}, ED: {{ item.batch.expired_date.strftime('%d/%m/%Y') }})</span>
                                     </div>
                                     {% endfor %}

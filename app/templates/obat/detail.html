@@ -63,6 +63,7 @@
                         <th class="px-5 py-3.5">Sumber Dana</th>
                         <th class="px-5 py-3.5 text-right">Stok Awal</th>
                         <th class="px-5 py-3.5 text-right">Stok Saat Ini</th>
+                        <th class="px-5 py-3.5 text-right">Harga Batch</th>
                         <th class="px-5 py-3.5 text-center">Status Batch</th>
                     </tr>
                 </thead>
@@ -87,6 +88,7 @@
                             <td class="px-5 py-4 text-slate-400">{{ b.sumber_dana }}</td>
                             <td class="px-5 py-4 text-right text-slate-400">{{ b.stok_awal|number }}</td>
                             <td class="px-5 py-4 text-right font-bold text-slate-100">{{ b.stok_sekarang|number }}</td>
+                            <td class="px-5 py-4 text-right text-slate-300 font-medium whitespace-nowrap">{{ b.harga_batch|currency }}</td>
                             <td class="px-5 py-4 text-center">
                                 {% if b.stok_sekarang == 0 %}
                                     <span class="px-2.5 py-0.5 rounded-full text-xs bg-slate-800 text-slate-500">Habis</span>
@@ -98,7 +100,7 @@
                         {% endfor %}
                     {% else %}
                         <tr>
-                            <td colspan="6" class="text-center py-8 text-slate-500 text-sm">Belum ada batch tercatat untuk obat ini.</td>
+                            <td colspan="7" class="text-center py-8 text-slate-500 text-sm">Belum ada batch tercatat untuk obat ini.</td>
                         </tr>
                     {% endif %}
                 </tbody>

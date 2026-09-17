@@ -19,6 +19,8 @@ def create_app(config_class=Config):
     from app.routes.penyesuaian import penyesuaian_bp
     from app.routes.stok_opname import stok_opname_bp
     from app.routes.auth import auth_bp
+    from app.routes.permintaan import permintaan_bp
+    from app.routes.webhook import webhook_bp
 
     app.register_blueprint(dashboard_bp)
     app.register_blueprint(obat_bp)
@@ -30,6 +32,8 @@ def create_app(config_class=Config):
     app.register_blueprint(penyesuaian_bp)
     app.register_blueprint(stok_opname_bp)
     app.register_blueprint(auth_bp)
+    app.register_blueprint(permintaan_bp)
+    app.register_blueprint(webhook_bp)
 
     @app.before_request
     def check_authentication():

@@ -49,7 +49,7 @@
                 <template x-for="(row, index) in rows" :key="index">
                     <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 grid grid-cols-1 md:grid-cols-12 gap-3 items-end">
                         
-                        <div class="md:col-span-4">
+                        <div class="md:col-span-3">
                             <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Obat *</label>
                             <select name="obat_id[]" required class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                                 <option value="">-- Pilih Obat --</option>
@@ -64,7 +64,7 @@
                             <input type="text" name="no_batch[]" required placeholder="BCH-..." class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-mono text-slate-100 focus:outline-none focus:border-emerald-500">
                         </div>
 
-                        <div class="md:col-span-3">
+                        <div class="md:col-span-2">
                             <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Exp Date (ED) *</label>
                             <input type="date" name="expired_date[]" required class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm text-slate-100 focus:outline-none focus:border-emerald-500">
                         </div>
@@ -72,6 +72,11 @@
                         <div class="md:col-span-2">
                             <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Jumlah *</label>
                             <input type="number" name="jumlah[]" required min="1" placeholder="Qty" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-emerald-400 focus:outline-none focus:border-emerald-500">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-1">Harga *</label>
+                            <input type="number" step="any" name="harga_satuan[]" required min="0" placeholder="Rp" class="w-full px-3 py-2 bg-slate-900 border border-slate-800 rounded-xl text-sm font-bold text-emerald-400 focus:outline-none focus:border-emerald-500">
                         </div>
 
                         <div class="md:col-span-1 text-right">

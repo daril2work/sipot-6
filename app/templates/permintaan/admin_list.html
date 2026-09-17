@@ -1,0 +1,88 @@
+{% extends 'base.html' %}
+
+{% block title %}Kelola Permintaan Masuk - Gudang Farmasi{% endblock %}
+{% block header_title %}Kelola Permintaan Obat dari Poli{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+            <h3 class="text-xl font-bold text-slate-100">Daftar Permintaan Masuk</h3>
+            <p class="text-xs text-slate-400">Tinjau dan setujui permintaan obat dari Sub-Unit/Poli.</p>
+        </div>
+        
+        <form method="GET" action="{{ url_for('permintaan.list_masuk') }}" class="flex items-center gap-2">
+            <select name="status" onchange="this.form.submit()" class="bg-slate-900 border border-slate-800 text-sm text-slate-300 rounded-xl px-4 py-2 focus:outline-none focus:border-emerald-500">
+                <option value="">Semua Status</option>
+                <option value="Pending" {% if status_filter == 'Pending' %}selected{% endif %}>Menunggu (Pending)</option>
+                <option value="Disetujui" {% if status_filter == 'Disetujui' %}selected{% endif %}>Disetujui</option>
+                <option value="Ditolak" {% if status_filter == 'Ditolak' %}selected{% endif %}>Ditolak</option>
+            </select>
+        </form>
+    </div>
+
+    <div class="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="text-xs uppercase bg-slate-950/80 text-slate-400 border-b border-slate-800">
+                    <tr>
+                        <th class="px-5 py-3.5">No Permintaan</th>
+                        <th class="px-5 py-3.5">Tanggal</th>
+                        <th class="px-5 py-3.5">Dari Poli/Sub-Unit</th>
+                        <th class="px-5 py-3.5">Item Diminta</th>
+                        <th class="px-5 py-3.5 text-center">Status</th>
+                        <th class="px-5 py-3.5 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-800/60">
+                    {% if permintaan_list %}
+                        {% for p in permintaan_list %}
+                        <tr class="hover:bg-slate-800/40 transition-colors">
+                            <td class="px-5 py-4 font-mono font-bold text-emerald-400">{{ p.no_permintaan }}</td>
+                            <td class="px-5 py-4 text-slate-300">{{ p.tanggal_permintaan.strftime('%d-%m-%Y %H:%M') }}</td>
+                            <td class="px-5 py-4 font-bold text-slate-100">{{ p.subunit.nama_subunit }}</td>
+                            <td class="px-5 py-4">
+                                <ul class="list-disc list-inside text-xs text-slate-400 space-y-1">
+                                    {% for item in p.items %}
+                                    <li>
+                                        {{ item.obat.nama_obat }} ({{ item.jumlah_diminta|number }} {{ item.obat.satuan }})
+                                    </li>
+                                    {% endfor %}
+                                </ul>
+                            </td>
+                            <td class="px-5 py-4 text-center">
+                                {% if p.status == 'Pending' %}
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/20">Pending</span>
+                                {% elif p.status == 'Disetujui' %}
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Disetujui</span>
+                                {% else %}
+                                    <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/20">Ditolak</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-5 py-4 text-center">
+                                {% if p.status == 'Pending' %}
+                                    <a href="{{ url_for('permintaan.approve_permintaan', id=p.id) }}" class="px-3 py-1.5 bg-emerald-500 text-slate-950 font-bold rounded-lg text-xs hover:bg-emerald-400 transition-colors">
+                                        Tinjau & Proses
+                                    </a>
+                                {% else %}
+                                    <span class="text-slate-500 text-xs italic">Selesai</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="6" class="text-center py-8 text-slate-500 text-sm">Tidak ada permintaan ditemukan.</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Pagination Bar -->
+    {% include 'pagination.html' %}
+
+</div>
+{% endblock %}

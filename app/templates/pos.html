@@ -36,7 +36,8 @@
                         <h4 class="font-bold text-slate-100 text-xs leading-snug group-hover:text-emerald-300 transition-colors line-clamp-2" x-text="item.nama_obat"></h4>
                         <div class="text-[11px] text-slate-400 mt-1 flex items-center gap-2">
                             <span x-text="item.bentuk_sediaan"></span> &bull; 
-                            <span class="font-semibold text-slate-300" x-text="item.satuan"></span>
+                            <span class="font-semibold text-slate-300" x-text="item.satuan"></span> &bull; 
+                            <span class="font-bold text-emerald-400" x-text="'Rp ' + item.harga_satuan.toLocaleString('id-ID')"></span>
                         </div>
                     </div>
 
@@ -97,7 +98,10 @@
                 <div class="p-2.5 rounded-xl bg-slate-950 border border-slate-800/80 flex items-center justify-between text-xs">
                     <div class="flex-1 min-w-0 pr-2">
                         <div class="font-bold text-slate-200 truncate" x-text="cItem.nama_obat"></div>
-                        <div class="text-[10px] text-emerald-400 font-mono" x-text="'Stok Tersedia: ' + cItem.total_stok + ' ' + cItem.satuan"></div>
+                        <div class="text-[10px] flex gap-2">
+                            <span class="text-emerald-400 font-mono" x-text="'Stok Tersedia: ' + cItem.total_stok + ' ' + cItem.satuan"></span>
+                            <span class="text-slate-400 font-mono" x-text="'@ Rp ' + cItem.harga_satuan.toLocaleString('id-ID')"></span>
+                        </div>
                     </div>
 
                     <div class="flex items-center gap-2">
@@ -181,6 +185,7 @@
                         nama_obat: item.nama_obat,
                         satuan: item.satuan,
                         total_stok: item.total_stok,
+                        harga_satuan: item.harga_satuan,
                         jumlah: 1
                     });
                 }

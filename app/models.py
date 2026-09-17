@@ -20,10 +20,11 @@ class User(BaseModel):
     password_hash = db.Column(db.String(255), nullable=False)
     role = db.Column(db.String(20), default='SubUnit')  # 'Admin' atau 'SubUnit'
     subunit_id = db.Column(db.Integer, db.ForeignKey('sub_unit.id'), nullable=True) # null jika Admin
+    telegram_chat_id = db.Column(db.String(50), nullable=True)
     nama_lengkap = db.Column(db.String(150))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-    subunit = db.relationship('SubUnit')
+    subunit = db.relationship('SubUnit', backref='users')
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -268,6 +269,29 @@ class StokOpnameItem(BaseModel):
     batch = db.relationship('BatchObat')
     obat = db.relationship('Obat')
 
+class PermintaanObat(BaseModel):
+    __tablename__ = 'permintaan_obat'
 
+    id = db.Column(db.Integer, primary_key=True)
+    no_permintaan = db.Column(db.String(50), unique=True, nullable=False)
+    subunit_id = db.Column(db.Integer, db.ForeignKey('sub_unit.id'), nullable=False)
+    tanggal_permintaan = db.Column(db.DateTime, default=datetime.utcnow)
+    status = db.Column(db.String(20), default='Pending')  # Pending, Disetujui, Ditolak
+    keterangan = db.Column(db.Text)
+    transaksi_keluar_id = db.Column(db.Integer, db.ForeignKey('transaksi_keluar.id'), nullable=True)
 
+    items = db.relationship('PermintaanObatItem', backref='permintaan', lazy=True, cascade="all, delete-orphan")
+    subunit = db.relationship('SubUnit', foreign_keys=[subunit_id])
+    transaksi_keluar = db.relationship('TransaksiKeluar')
+
+class PermintaanObatItem(BaseModel):
+    __tablename__ = 'permintaan_obat_item'
+
+    id = db.Column(db.Integer, primary_key=True)
+    permintaan_id = db.Column(db.Integer, db.ForeignKey('permintaan_obat.id'), nullable=False)
+    obat_id = db.Column(db.Integer, db.ForeignKey('obat.id'), nullable=False)
+    jumlah_diminta = db.Column(db.Integer, nullable=False)
+    jumlah_disetujui = db.Column(db.Integer, nullable=True)
+
+    obat = db.relationship('Obat')
 
